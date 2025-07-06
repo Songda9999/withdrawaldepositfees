@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Fee Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test API Fee Data</h1>
+    
+    <button onclick="fetchFeeData()">Get Fee Data</button>
+    
+    <div class="response" id="response-container">
+        <!-- The response from the API will be displayed here -->
+    </div>
+
+    <script>
+        async function fetchFeeData() {
+            const url = 'https://withdrawchargefee.sokdana2233.workers.dev/';  // Your Cloudflare Worker URL
+            const postData = {
+                authLevel: "1",
+                pageNumber: 1,
+                pageSize: 20
+            };
+
+            const responseContainer = document.getElementById('response-container');
+            responseContainer.innerHTML = 'Loading...';  // Show loading message
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                const data = await response.json();  // Parse JSON response
+
+                if (data && data.code === 0) {
+                    responseContainer.innerHTML = JSON.stringify(data, null, 2);  // Show API response
+                } else {
+                    responseContainer.innerHTML = 'Error fetching data: ' + (data.msg || 'Unknown error');
+                }
+            } catch (error) {
+                responseContainer.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
