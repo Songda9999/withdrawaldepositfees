@@ -19,13 +19,19 @@
 <body>
     <h1>Test API Fee Data</h1>
     
-    <button onclick="fetchFeeData()">Get Fee Data</button>
+    <!-- Button to trigger API request -->
+    <button id="getFeeDataButton">Get Fee Data</button>
     
+    <!-- Area where response data will be displayed -->
     <div class="response" id="response-container">
         <!-- The response from the API will be displayed here -->
     </div>
 
     <script>
+        // Add an event listener to the button instead of using 'onclick' in HTML
+        document.getElementById('getFeeDataButton').addEventListener('click', fetchFeeData);
+
+        // Function to make the API call and process the response
         async function fetchFeeData() {
             const url = 'https://withdrawchargefee.sokdana2233.workers.dev';  // Your Cloudflare Worker URL
             const postData = {
@@ -38,6 +44,7 @@
             responseContainer.innerHTML = 'Loading...';  // Show loading message
 
             try {
+                // Send the POST request to Cloudflare Worker
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -46,14 +53,20 @@
                     body: JSON.stringify(postData)
                 });
 
-                const data = await response.json();  // Parse JSON response
+                console.log("API response:", response);  // Log the entire response for debugging
+
+                // Parse JSON response
+                const data = await response.json();
 
                 if (data && data.code === 0) {
-                    responseContainer.innerHTML = JSON.stringify(data, null, 2);  // Show API response
+                    // Display the API response
+                    responseContainer.innerHTML = JSON.stringify(data, null, 2);
                 } else {
+                    // Display any error message from the API
                     responseContainer.innerHTML = 'Error fetching data: ' + (data.msg || 'Unknown error');
                 }
             } catch (error) {
+                console.error("Error fetching data:", error);  // Log any errors for debugging
                 responseContainer.innerHTML = 'Error: ' + error.message;
             }
         }
