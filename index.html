@@ -177,9 +177,9 @@
                 currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
             }
 
-            // Update date and time immediately and then every second
+            // Update date and time immediately (not continuously)
             updateDateTime();
-            setInterval(updateDateTime, 1000);
+            // Removed setInterval for continuous date/time update
 
             // Event listeners for main tabs (e.g., "充值 / 提现")
             document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
@@ -204,10 +204,7 @@
             // Initial fetch when the page loads
             fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
 
-            // Set up interval to fetch data every 10 seconds (10000 milliseconds)
-            setInterval(() => {
-                fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
-            }, 10000); // Fetch every 10 seconds
+            // Removed setInterval for automatic data fetching
         });
 
         async function fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody) {
@@ -217,7 +214,6 @@
             loadingSpinner.classList.remove('hidden');
             responseContainer.classList.remove('justify-center', 'items-center'); // Adjust for table display
 
-            // Corrected: postData should be an object, not an array
             const postData = {
                 authLevel: currentAuthLevel,
                 pageNumber: 1,
@@ -235,49 +231,119 @@
 
                 const data = await response.json();
 
-                if (data && data.code === 0 && data.data && data.data.list) {
+                // Check for API success code (which is "0" as a string) and data presence
+                if (data && data.code === "0" && data.data && data.data.feeDataList) {
                     feeTableBody.innerHTML = ''; // Clear previous data
-                    data.data.list.forEach(item => {
-                        // Assuming 'item.feeList' contains the recharge/withdraw details
-                        if (item.feeList && item.feeList.length > 0) {
-                            item.feeList.forEach((feeItem, index) => {
-                                const row = document.createElement('tr');
-                                row.classList.add('table-row');
 
-                                // Only display coin and mainnet type for the first entry of a coin
-                                if (index === 0) {
-                                    const coinTd = document.createElement('td');
-                                    coinTd.textContent = item.coin;
-                                    coinTd.rowSpan = item.feeList.length; // Span rows for coin
-                                    row.appendChild(coinTd);
+                    data.data.feeDataList.forEach(coinGroup => {
+                        const coinSymbol = Object.keys(coinGroup)[0]; // Get the coin symbol (e.g., "BTC", "ETH")
+                        const feeListForCoin = coinGroup[coinSymbol]; // Get the array of fee details for this coin
 
-                                    const mainnetTd = document.createElement('td');
-                                    mainnetTd.textContent = feeItem.mainNetType;
-                                    mainnetTd.rowSpan = 1; // This will be dynamic based on the actual data structure
-                                    row.appendChild(mainnetTd);
-                                } else {
-                                    const mainnetTd = document.createElement('td');
-                                    mainnetTd.textContent = feeItem.mainNetType;
-                                    row.appendChild(mainnetTd);
+                        if (feeListForCoin && feeListForCoin.length > 0) {
+                            let totalRowsForCurrentCoin = 0;
+                            // Calculate total rows this coin will span (sum of deposit/withdraw rows for all its chain types)
+                            feeListForCoin.forEach(chainFeeItem => {
+                                const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
+                                if (actualFeeData.depositOpen === 1) totalRowsForCurrentCoin++;
+                                if (actualFeeData.withdrawOpen === 1) totalRowsForCurrentCoin++;
+                            });
+
+                            let hasAddedCoinSymbolCell = false; // Flag to add coin symbol cell only once per coin group
+
+                            feeListForCoin.forEach(chainFeeItem => {
+                                const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
+
+                                // Calculate total rows this specific mainnet type will span (1 for deposit, 1 for withdraw)
+                                let totalRowsForCurrentMainnet = 0;
+                                if (actualFeeData.depositOpen === 1) totalRowsForCurrentMainnet++;
+                                if (actualFeeData.withdrawOpen === 1) totalRowsForCurrentMainnet++;
+
+                                let hasAddedMainnetCell = false; // Flag to add mainnet type cell only once per chain type within this coin
+
+                                // Handle Recharge (充值)
+                                if (actualFeeData.depositOpen === 1) {
+                                    const rowDeposit = document.createElement('tr');
+                                    rowDeposit.classList.add('table-row');
+
+                                    // Add Coin Symbol cell if it hasn't been added for this coin group yet
+                                    if (!hasAddedCoinSymbolCell) {
+                                        const coinTd = document.createElement('td');
+                                        coinTd.textContent = coinSymbol;
+                                        coinTd.rowSpan = totalRowsForCurrentCoin;
+                                        rowDeposit.appendChild(coinTd);
+                                        hasAddedCoinSymbolCell = true;
+                                    }
+
+                                    // Add Mainnet Type cell if it hasn't been added for this chain type yet
+                                    if (!hasAddedMainnetCell) {
+                                        const mainnetTd = document.createElement('td');
+                                        mainnetTd.textContent = actualFeeData.chainDesc;
+                                        mainnetTd.rowSpan = totalRowsForCurrentMainnet;
+                                        rowDeposit.appendChild(mainnetTd);
+                                        hasAddedMainnetCell = true;
+                                    }
+
+                                    const typeTdDeposit = document.createElement('td');
+                                    typeTdDeposit.textContent = '充值';
+                                    rowDeposit.appendChild(typeTdDeposit);
+
+                                    const minAmountTdDeposit = document.createElement('td');
+                                    minAmountTdDeposit.textContent = actualFeeData.depositMin;
+                                    rowDeposit.appendChild(minAmountTdDeposit);
+
+                                    const dailyMaxAmountTdDeposit = document.createElement('td');
+                                    dailyMaxAmountTdDeposit.textContent = '--'; // As per image, deposit doesn't have daily max
+                                    rowDeposit.appendChild(dailyMaxAmountTdDeposit);
+
+                                    const feeTdDeposit = document.createElement('td');
+                                    feeTdDeposit.textContent = `0 ${coinSymbol}`; // As per image, deposit fee is 0
+                                    rowDeposit.appendChild(feeTdDeposit);
+
+                                    feeTableBody.appendChild(rowDeposit);
                                 }
 
-                                const typeTd = document.createElement('td');
-                                typeTd.textContent = feeItem.type === 1 ? '充值' : '提现'; // 1 for recharge, 2 for withdraw
-                                row.appendChild(typeTd);
+                                // Handle Withdraw (提现)
+                                if (actualFeeData.withdrawOpen === 1) {
+                                    const rowWithdraw = document.createElement('tr');
+                                    rowWithdraw.classList.add('table-row');
 
-                                const minAmountTd = document.createElement('td');
-                                minAmountTd.textContent = feeItem.minAmount;
-                                row.appendChild(minAmountTd);
+                                    // Add Coin Symbol cell if it hasn't been added for this coin group yet
+                                    if (!hasAddedCoinSymbolCell) {
+                                        const coinTd = document.createElement('td');
+                                        coinTd.textContent = coinSymbol;
+                                        coinTd.rowSpan = totalRowsForCurrentCoin;
+                                        rowWithdraw.appendChild(coinTd);
+                                        hasAddedCoinSymbolCell = true;
+                                    }
 
-                                const dailyMaxAmountTd = document.createElement('td');
-                                dailyMaxAmountTd.textContent = feeItem.dailyMaxAmount || '--'; // Use '--' if not available
-                                row.appendChild(dailyMaxAmountTd);
+                                    // Add Mainnet Type cell only if it wasn't added by a deposit row for this chain type
+                                    // This ensures it spans correctly if only withdraw is open, or if deposit was handled above.
+                                    if (!hasAddedMainnetCell && actualFeeData.depositOpen !== 1) {
+                                        const mainnetTd = document.createElement('td');
+                                        mainnetTd.textContent = actualFeeData.chainDesc;
+                                        mainnetTd.rowSpan = totalRowsForCurrentMainnet;
+                                        rowWithdraw.appendChild(mainnetTd);
+                                        hasAddedMainnetCell = true;
+                                    }
 
-                                const feeTd = document.createElement('td');
-                                feeTd.textContent = `${feeItem.fee} ${item.coin}`;
-                                row.appendChild(feeTd);
+                                    const typeTdWithdraw = document.createElement('td');
+                                    typeTdWithdraw.textContent = '提现';
+                                    rowWithdraw.appendChild(typeTdWithdraw);
 
-                                feeTableBody.appendChild(row);
+                                    const minAmountTdWithdraw = document.createElement('td');
+                                    minAmountTdWithdraw.textContent = actualFeeData.withdrawMin;
+                                    rowWithdraw.appendChild(minAmountTdWithdraw);
+
+                                    const dailyMaxAmountTdWithdraw = document.createElement('td');
+                                    dailyMaxAmountTdWithdraw.textContent = actualFeeData.withdrawMaxDay || '--';
+                                    rowWithdraw.appendChild(dailyMaxAmountTdWithdraw);
+
+                                    const feeTdWithdraw = document.createElement('td');
+                                    feeTdWithdraw.textContent = `${actualFeeData.defaultFee} ${coinSymbol}`;
+                                    rowWithdraw.appendChild(feeTdWithdraw);
+
+                                    feeTableBody.appendChild(rowWithdraw);
+                                }
                             });
                         }
                     });
