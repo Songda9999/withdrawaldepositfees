@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-16">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>手续费率 (Fee Rates)</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -19,7 +19,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        /* Styles for the tab groups (reverted to original simple border-bottom) */
+        /* Styles for the tab groups */
         .tab-group {
             display: flex;
             border-bottom: 1px solid #e5e7eb; /* Light gray border for the group */
@@ -48,12 +48,32 @@
             box-shadow: none; /* Remove shadow */
             border-radius: 0; /* Remove border radius */
         }
-        /* Ensure first and last active tabs do not have rounded corners or extra borders */
-        .tab-button.active:first-child {
-            border-top-left-radius: 0;
+
+        /* Styles for secondary tabs (e.g., 现货交易/合约交易) */
+        .secondary-tab-group {
+            display: flex;
         }
-        .tab-button.active:last-child {
-            border-top-right-radius: 0;
+        .secondary-tab-button {
+            padding: 10px 20px; /* Match primary tab padding for consistency */
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280; /* Inactive text color */
+            background-color: transparent; /* No background color for inactive */
+            border-bottom: 2px solid transparent; /* Default transparent bottom border */
+            white-space: nowrap;
+            transition: all 0.2s ease-in-out;
+            border-radius: 0; /* No border radius */
+            margin-right: 0; /* Remove margin-right if not needed for spacing */
+        }
+        .secondary-tab-button:hover {
+            color: #374151;
+            background-color: #f3f4f6; /* Light hover background */
+        }
+        .secondary-tab-button.active {
+            color: #1a1a1a; /* Active text color */
+            font-weight: 600;
+            border-color: #1a1a1a; /* Active bottom border */
+            background-color: transparent; /* Transparent background for active */
         }
 
         .table-header th {
@@ -73,21 +93,50 @@
         .table-row:last-child td {
             border-bottom: none;
         }
-        .search-input {
+        /* General input styling for search fields and select */
+        .general-input {
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            padding: 8px 12px;
-            width: 250px;
+            padding: 6px 10px; /* Reduced padding */
             font-size: 0.875rem;
-            /* Adjusted padding to make space for the icon */
-            padding-left: 36px; /* Increased padding-left to move text away from icon */
+            transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out; /* Smooth transition for border and background */
         }
+        .general-input:focus {
+            border-color: #00C49A; /* Teal/Turquoise color on focus as per image */
+            outline: none; /* Remove default outline */
+        }
+        /* Style for disabled select/input */
+        .general-input:disabled {
+            background-color: #f3f4f6; /* Lighter gray background for disabled */
+            color: #9ca3af; /* Gray out text */
+            cursor: not-allowed;
+            border-color: #e5e7eb; /* Keep border light gray */
+        }
+
+        /* Specific styles for search input with icon */
+        .search-input-with-icon {
+            padding-left: 30px; /* Added padding-left to make space for the icon */
+        }
+        /* Specific styles for trade tab search and select inputs */
+        #tradeCoinSelect {
+            width: 100px; /* Smaller width for coin select */
+            padding-right: 25px; /* Adjust padding for dropdown arrow */
+        }
+        /* Hide the dropdown arrow when the select is disabled */
+        #tradeCoinSelect:disabled + svg {
+            display: none;
+        }
+        #searchInputTrade {
+            width: 200px; /* Longer width for trade search input */
+        }
+        /* General search icon styling (inside input) */
         .search-icon {
             position: absolute;
-            left: 12px; /* Adjusted left position for the icon */
+            left: 8px; /* Position icon inside input */
             top: 50%;
             transform: translateY(-50%);
-            color: #9ca3af; /* A slightly lighter gray for the icon */
+            color: #9ca3af;
+            pointer-events: none; /* Make icon non-interactive so clicks go to input */
         }
         .loading-spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
@@ -102,36 +151,102 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .no-data-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* Pagination styles */
+        .pagination-button, .page-number-button {
+            padding: 8px; /* Adjusted padding for circular buttons */
+            border-radius: 50%; /* Make buttons circular */
+            border: 1px solid #e5e7eb;
+            background-color: #ffffff;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #6b7280;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px; /* Explicit width for circular buttons */
+            height: 36px; /* Explicit height for circular buttons */
+        }
+        .pagination-button:hover:not(:disabled), .page-number-button:hover:not(.active) {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        .page-number-button.active {
+            background-color: #1a1a1a; /* Dark background for active page */
+            color: #ffffff; /* White text for active page */
+            border-color: #1a1a1a;
+        }
+        .pagination-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .page-number-button + .page-number-button {
+            margin-left: 8px; /* Space between page number buttons */
+        }
     </style>
 </head>
 <body class="antialiased">
     <div class="container">
-        <h1 class="text-3xl font-semibold text-gray-900 mb-2">手续费率</h1>
         <p class="text-sm text-gray-500 mb-6" id="currentDateTime">加载中...</p>
 
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex tab-group"> <!-- Main tabs -->
+        <div class="mb-6">
+            <!-- Primary Tabs -->
+            <div class="flex tab-group mb-4">
+                <button class="tab-button" data-tab="trade">交易</button>
                 <button class="tab-button active" data-tab="recharge-withdraw">充值 / 提现</button>
-                <!-- Add other tabs if needed, e.g., <button class="tab-button" data-tab="trade">交易</button> -->
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="flex tab-group"> <!-- Auth level tabs -->
+
+            <!-- Content for "充值 / 提现" tab -->
+            <div id="rechargeWithdrawContent" class="flex items-center justify-between">
+                <div class="flex tab-group">
                     <button class="tab-button active" data-auth="0">未认证</button>
                     <button class="tab-button" data-auth="1">L1</button>
                     <button class="tab-button" data-auth="2">L2</button>
                 </div>
+                <!-- Search input for Recharge/Withdraw -->
                 <div class="relative">
-                    <input type="text" id="searchInput" placeholder="搜索" class="search-input focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <svg class="search-icon" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+                    <input type="text" id="searchInputRechargeWithdraw" placeholder="搜索" class="general-input search-input-with-icon">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Content for "交易" tab (initially hidden) -->
+            <div id="tradeContent" class="hidden">
+                <!-- This flex container now holds both the secondary tabs and the search/select group -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex secondary-tab-group">
+                        <button class="secondary-tab-button active" data-trade-type="spot">现货交易</button>
+                        <button class="secondary-tab-button" data-trade-type="contract">合约交易</button>
+                    </div>
+                    <div class="flex items-center"> <!-- Group the select and search input together -->
+                        <div class="relative mr-4"> <!-- Add margin-right for spacing between select and search -->
+                            <select id="tradeCoinSelect" class="general-input appearance-none bg-white pr-10">
+                                <option value="USDT">USDT</option>
+                                <option value="USD">USD</option>
+                                <option value="BTC">BTC</option>
+                            </select>
+                            <!-- Custom dropdown arrow SVG -->
+                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                        </div>
+                        <!-- Search input for Trade -->
+                        <div class="relative">
+                            <input type="text" id="searchInputTrade" placeholder="搜寻" class="general-input search-input-with-icon">
+                            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="response-container" class="min-h-48 flex items-center justify-center">
             <div class="loading-spinner hidden" id="loadingSpinner"></div>
-            <p id="initialMessage" class="text-gray-500">点击 "充值 / 提现" 按钮获取数据</p>
             <div id="feeDataTable" class="w-full hidden">
                 <table class="min-w-full bg-white rounded-lg overflow-hidden">
                     <thead>
@@ -149,75 +264,299 @@
                     </tbody>
                 </table>
             </div>
+            <!-- No search results message -->
+            <div id="noSearchResults" class="no-data-message hidden">
+                <p>暂无数据</p>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationControls" class="flex justify-center items-center mt-6 hidden">
+            <button id="prevPage" class="pagination-button mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div id="pageNumbers" class="flex">
+                <!-- Page numbers will be inserted here by JavaScript -->
+            </div>
+            <button id="nextPage" class="pagination-button ml-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
-        let currentAuthLevel = "0"; // Default auth level
+        let currentAuthLevel = "0"; // Default auth level for recharge/withdraw
+        let currentTradeType = "spot"; // Default trade type for trade tab
+        let currentTradeCoin = "USDT"; // Default coin for trade tab
+        let allFeeData = []; // To store the original fetched data
+        let filteredAndSearchedData = []; // To store data after search filtering
+        let currentPage = 1;
+        const displayPageSize = 20; // Number of items to display per page
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Get references to elements once the DOM is ready
-            const responseContainer = document.getElementById('response-container');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const initialMessage = document.getElementById('initialMessage');
-            const feeDataTable = document.getElementById('feeDataTable');
-            const feeTableBody = document.getElementById('feeTableBody');
-            const currentDateTimeElement = document.getElementById('currentDateTime');
+        // DOM element references (cached for performance)
+        let DOMElements = {};
 
-            // Function to update the current date and time
-            function updateDateTime() {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        // Helper function to format numbers, especially small ones
+        function formatNumber(num) {
+            const value = parseFloat(num);
+
+            if (isNaN(value)) {
+                return num; // Return as is if not a valid number
             }
 
-            // Update date and time immediately (not continuously)
-            updateDateTime();
-            // Removed setInterval for continuous date/time update
+            // If the number is very small but not zero, format it to a fixed number of decimal places
+            // For example, if it's 3e-7, it becomes 0.0000003
+            if (value > 0 && value < 0.000001) { // Numbers smaller than 1e-6
+                return value.toFixed(8).replace(/0+$/, ''); // ToFixed(8) and remove trailing zeros
+            }
+            // For other numbers, keep original or apply general formatting if needed
+            return value.toString();
+        }
 
-            // Event listeners for main tabs (e.g., "充值 / 提现")
-            document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
-                    event.target.classList.add('active');
-                    // Add specific functionality here if different tabs require different actions
+        // Function to navigate to a specific page
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredAndSearchedData.length / displayPageSize);
+            DOMElements.pageNumbersContainer.innerHTML = ''; // Clear previous page numbers
+
+            if (totalPages <= 1) {
+                DOMElements.paginationControls.classList.add('hidden');
+                return;
+            } else {
+                DOMElements.paginationControls.classList.remove('hidden');
+            }
+
+            // Enable/disable Prev/Next buttons
+            DOMElements.prevPageButton.disabled = currentPage === 1;
+            DOMElements.nextPageButton.disabled = currentPage === totalPages;
+
+            // Render page number buttons
+            const maxPageButtons = 7; // Max number of page buttons to display
+            let startPage, endPage;
+
+            if (totalPages <= maxPageButtons) {
+                // Display all pages if total pages are less than or equal to maxPageButtons
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                // Calculate start and end pages for ellipsis
+                const middle = Math.floor(maxPageButtons / 2);
+                if (currentPage <= middle) {
+                    startPage = 1;
+                    endPage = maxPageButtons;
+                } else if (currentPage + middle >= totalPages) {
+                    startPage = totalPages - maxPageButtons + 1;
+                    endPage = totalPages;
+                } else {
+                    startPage = currentPage - middle;
+                    endPage = currentPage + middle;
+                }
+            }
+
+            if (startPage > 1) {
+                const firstPageButton = document.createElement('button');
+                firstPageButton.textContent = '1';
+                firstPageButton.classList.add('page-number-button');
+                firstPageButton.addEventListener('click', () => goToPage(1));
+                DOMElements.pageNumbersContainer.appendChild(firstPageButton);
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.classList.add('page-number-ellipsis', 'px-2', 'text-gray-500');
+                    DOMElements.pageNumbersContainer.appendChild(ellipsis);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-number-button');
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => goToPage(i));
+                DOMElements.pageNumbersContainer.appendChild(pageButton);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.classList.add('page-number-ellipsis', 'px-2', 'text-gray-500');
+                    DOMElements.pageNumbersContainer.appendChild(ellipsis);
+                }
+                const lastPageButton = document.createElement('button');
+                lastPageButton.textContent = totalPages;
+                lastPageButton.classList.add('page-number-button');
+                lastPageButton.addEventListener('click', () => goToPage(totalPages));
+                DOMElements.pageNumbersContainer.appendChild(lastPageButton);
+            }
+        }
+
+        function renderTable() {
+            DOMElements.feeTableBody.innerHTML = ''; // Clear previous data
+
+            const startIndex = (currentPage - 1) * displayPageSize;
+            const endIndex = startIndex + displayPageSize;
+            const paginatedData = filteredAndSearchedData.slice(startIndex, endIndex);
+
+            if (paginatedData.length === 0) {
+                DOMElements.feeDataTable.classList.add('hidden');
+                DOMElements.noSearchResults.classList.remove('hidden'); // Show no search results message
+                DOMElements.paginationControls.classList.add('hidden'); // Hide pagination if no data
+            } else {
+                DOMElements.feeDataTable.classList.remove('hidden');
+                DOMElements.noSearchResults.classList.add('hidden'); // Hide no search results message
+                DOMElements.paginationControls.classList.remove('hidden'); // Show pagination if data exists
+
+                paginatedData.forEach(coinGroup => {
+                    const coinSymbol = Object.keys(coinGroup)[0];
+                    const feeListForCoin = coinGroup[coinSymbol];
+
+                    if (feeListForCoin && feeListForCoin.length > 0) {
+                        let totalRowsForCurrentCoin = 0;
+                        feeListForCoin.forEach(chainFeeItem => {
+                            const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
+                            if (actualFeeData.depositOpen === 1) totalRowsForCurrentCoin++;
+                            if (actualFeeData.withdrawOpen === 1) totalRowsForCurrentCoin++;
+                        });
+
+                        let hasAddedCoinSymbolCell = false;
+
+                        feeListForCoin.forEach(chainFeeItem => {
+                            const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
+
+                            let totalRowsForCurrentMainnet = 0;
+                            if (actualFeeData.depositOpen === 1) totalRowsForCurrentMainnet++;
+                            if (actualFeeData.withdrawOpen === 1) totalRowsForCurrentMainnet++;
+
+                            let hasAddedMainnetCell = false;
+
+                            // Handle Recharge (充值)
+                            if (actualFeeData.depositOpen === 1) {
+                                const rowDeposit = document.createElement('tr');
+                                rowDeposit.classList.add('table-row');
+
+                                if (!hasAddedCoinSymbolCell) {
+                                    const coinTd = document.createElement('td');
+                                    coinTd.textContent = coinSymbol;
+                                    coinTd.rowSpan = totalRowsForCurrentCoin;
+                                    rowDeposit.appendChild(coinTd);
+                                    hasAddedCoinSymbolCell = true;
+                                }
+
+                                if (!hasAddedMainnetCell) {
+                                    const mainnetTd = document.createElement('td');
+                                    mainnetTd.textContent = actualFeeData.chainDesc;
+                                    mainnetTd.rowSpan = totalRowsForCurrentMainnet;
+                                    rowDeposit.appendChild(mainnetTd);
+                                    hasAddedMainnetCell = true;
+                                }
+
+                                const typeTdDeposit = document.createElement('td');
+                                typeTdDeposit.textContent = '充值';
+                                rowDeposit.appendChild(typeTdDeposit);
+
+                                const minAmountTdDeposit = document.createElement('td');
+                                minAmountTdDeposit.textContent = formatNumber(actualFeeData.depositMin); // Formatted
+                                rowDeposit.appendChild(minAmountTdDeposit);
+
+                                const dailyMaxAmountTdDeposit = document.createElement('td');
+                                dailyMaxAmountTdDeposit.textContent = '--';
+                                rowDeposit.appendChild(dailyMaxAmountTdDeposit);
+
+                                const feeTdDeposit = document.createElement('td');
+                                feeTdDeposit.textContent = `0 ${coinSymbol}`;
+                                rowDeposit.appendChild(feeTdDeposit);
+
+                                DOMElements.feeTableBody.appendChild(rowDeposit);
+                            }
+
+                            // Handle Withdraw (提现)
+                            if (actualFeeData.withdrawOpen === 1) {
+                                const rowWithdraw = document.createElement('tr');
+                                rowWithdraw.classList.add('table-row');
+
+                                if (!hasAddedCoinSymbolCell) {
+                                    const coinTd = document.createElement('td');
+                                    coinTd.textContent = coinSymbol;
+                                    coinTd.rowSpan = totalRowsForCurrentCoin;
+                                    rowWithdraw.appendChild(coinTd);
+                                    hasAddedCoinSymbolCell = true;
+                                }
+
+                                if (!hasAddedMainnetCell && actualFeeData.depositOpen !== 1) {
+                                    const mainnetTd = document.createElement('td');
+                                    mainnetTd.textContent = actualFeeData.chainDesc;
+                                    mainnetTd.rowSpan = totalRowsForCurrentMainnet;
+                                    rowWithdraw.appendChild(mainnetTd);
+                                    hasAddedMainnetCell = true;
+                                }
+
+                                const typeTdWithdraw = document.createElement('td');
+                                typeTdWithdraw.textContent = '提现';
+                                rowWithdraw.appendChild(typeTdWithdraw);
+
+                                const minAmountTdWithdraw = document.createElement('td');
+                                minAmountTdWithdraw.textContent = formatNumber(actualFeeData.withdrawMin); // Formatted
+                                rowWithdraw.appendChild(minAmountTdWithdraw);
+
+                                const dailyMaxAmountTdWithdraw = document.createElement('td');
+                                dailyMaxAmountTdWithdraw.textContent = actualFeeData.withdrawMaxDay || '--';
+                                rowWithdraw.appendChild(dailyMaxAmountTdWithdraw);
+
+                                const feeTdWithdraw = document.createElement('td');
+                                feeTdWithdraw.textContent = `${formatNumber(actualFeeData.defaultFee)} ${coinSymbol}`; // Formatted
+                                rowWithdraw.appendChild(feeTdWithdraw);
+
+                                DOMElements.feeTableBody.appendChild(rowWithdraw);
+                            }
+                        });
+                    }
                 });
-            });
+            }
+        }
 
-            // Event listeners for auth level tabs
-            document.querySelectorAll('.tab-button[data-auth]').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    document.querySelectorAll('.tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
-                    event.target.classList.add('active');
-                    currentAuthLevel = event.target.dataset.auth;
-                    // Pass the element references to the fetchFeeData function
-                    fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
+        function filterTable(query) {
+            const lowerCaseQuery = query.toLowerCase().trim();
+            let tempFilteredData = [];
+
+            if (lowerCaseQuery === '') {
+                tempFilteredData = allFeeData; // If query is empty, show all data
+            } else {
+                allFeeData.forEach(coinGroup => {
+                    const coinSymbol = Object.keys(coinGroup)[0]; // Get the coin symbol (e.g., "BTC", "ETH")
+
+                    // Only check if coin symbol matches the query
+                    if (coinSymbol.toLowerCase().includes(lowerCaseQuery)) {
+                        tempFilteredData.push(coinGroup); // Add the entire coin group if its symbol matches
+                    }
                 });
-            });
+            }
+            filteredAndSearchedData = tempFilteredData; // Update the global filtered data
+            currentPage = 1; // Reset to the first page after filtering
+            renderTable(); // Render the first page of filtered data
+            renderPagination(); // Render pagination controls
+        }
 
-            // Initial fetch when the page loads
-            fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
-
-            // Removed setInterval for automatic data fetching
-        });
-
-        async function fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody) {
-            // Show loading, hide initial message and table
-            initialMessage.classList.add('hidden');
-            feeDataTable.classList.add('hidden');
-            loadingSpinner.classList.remove('hidden');
-            responseContainer.classList.remove('justify-center', 'items-center'); // Adjust for table display
+        async function fetchFeeData() {
+            // Show loading, hide table, and no search results message
+            DOMElements.feeDataTable.classList.add('hidden');
+            DOMElements.noSearchResults.classList.add('hidden'); // Hide no search results message
+            DOMElements.loadingSpinner.classList.remove('hidden');
+            DOMElements.responseContainer.classList.remove('justify-center', 'items-center'); // Adjust for table display
+            DOMElements.paginationControls.classList.add('hidden'); // Hide pagination during fetch
 
             const postData = {
                 authLevel: currentAuthLevel,
-                pageNumber: 1,
-                pageSize: 100
+                pageNumber: 1, // Always fetch all data for client-side pagination
+                pageSize: 100 // Fetch a large enough size to cover all data for client-side pagination
             };
 
             try {
@@ -233,131 +572,168 @@
 
                 // Check for API success code (which is "0" as a string) and data presence
                 if (data && data.code === "0" && data.data && data.data.feeDataList) {
-                    feeTableBody.innerHTML = ''; // Clear previous data
-
-                    data.data.feeDataList.forEach(coinGroup => {
-                        const coinSymbol = Object.keys(coinGroup)[0]; // Get the coin symbol (e.g., "BTC", "ETH")
-                        const feeListForCoin = coinGroup[coinSymbol]; // Get the array of fee details for this coin
-
-                        if (feeListForCoin && feeListForCoin.length > 0) {
-                            let totalRowsForCurrentCoin = 0;
-                            // Calculate total rows this coin will span (sum of deposit/withdraw rows for all its chain types)
-                            feeListForCoin.forEach(chainFeeItem => {
-                                const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
-                                if (actualFeeData.depositOpen === 1) totalRowsForCurrentCoin++;
-                                if (actualFeeData.withdrawOpen === 1) totalRowsForCurrentCoin++;
-                            });
-
-                            let hasAddedCoinSymbolCell = false; // Flag to add coin symbol cell only once per coin group
-
-                            feeListForCoin.forEach(chainFeeItem => {
-                                const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
-
-                                // Calculate total rows this specific mainnet type will span (1 for deposit, 1 for withdraw)
-                                let totalRowsForCurrentMainnet = 0;
-                                if (actualFeeData.depositOpen === 1) totalRowsForCurrentMainnet++;
-                                if (actualFeeData.withdrawOpen === 1) totalRowsForCurrentMainnet++;
-
-                                let hasAddedMainnetCell = false; // Flag to add mainnet type cell only once per chain type within this coin
-
-                                // Handle Recharge (充值)
-                                if (actualFeeData.depositOpen === 1) {
-                                    const rowDeposit = document.createElement('tr');
-                                    rowDeposit.classList.add('table-row');
-
-                                    // Add Coin Symbol cell if it hasn't been added for this coin group yet
-                                    if (!hasAddedCoinSymbolCell) {
-                                        const coinTd = document.createElement('td');
-                                        coinTd.textContent = coinSymbol;
-                                        coinTd.rowSpan = totalRowsForCurrentCoin;
-                                        rowDeposit.appendChild(coinTd);
-                                        hasAddedCoinSymbolCell = true;
-                                    }
-
-                                    // Add Mainnet Type cell if it hasn't been added for this chain type yet
-                                    if (!hasAddedMainnetCell) {
-                                        const mainnetTd = document.createElement('td');
-                                        mainnetTd.textContent = actualFeeData.chainDesc;
-                                        mainnetTd.rowSpan = totalRowsForCurrentMainnet;
-                                        rowDeposit.appendChild(mainnetTd);
-                                        hasAddedMainnetCell = true;
-                                    }
-
-                                    const typeTdDeposit = document.createElement('td');
-                                    typeTdDeposit.textContent = '充值';
-                                    rowDeposit.appendChild(typeTdDeposit);
-
-                                    const minAmountTdDeposit = document.createElement('td');
-                                    minAmountTdDeposit.textContent = actualFeeData.depositMin;
-                                    rowDeposit.appendChild(minAmountTdDeposit);
-
-                                    const dailyMaxAmountTdDeposit = document.createElement('td');
-                                    dailyMaxAmountTdDeposit.textContent = '--'; // As per image, deposit doesn't have daily max
-                                    rowDeposit.appendChild(dailyMaxAmountTdDeposit);
-
-                                    const feeTdDeposit = document.createElement('td');
-                                    feeTdDeposit.textContent = `0 ${coinSymbol}`; // As per image, deposit fee is 0
-                                    rowDeposit.appendChild(feeTdDeposit);
-
-                                    feeTableBody.appendChild(rowDeposit);
-                                }
-
-                                // Handle Withdraw (提现)
-                                if (actualFeeData.withdrawOpen === 1) {
-                                    const rowWithdraw = document.createElement('tr');
-                                    rowWithdraw.classList.add('table-row');
-
-                                    // Add Coin Symbol cell if it hasn't been added for this coin group yet
-                                    if (!hasAddedCoinSymbolCell) {
-                                        const coinTd = document.createElement('td');
-                                        coinTd.textContent = coinSymbol;
-                                        coinTd.rowSpan = totalRowsForCurrentCoin;
-                                        rowWithdraw.appendChild(coinTd);
-                                        hasAddedCoinSymbolCell = true;
-                                    }
-
-                                    // Add Mainnet Type cell only if it wasn't added by a deposit row for this chain type
-                                    // This ensures it spans correctly if only withdraw is open, or if deposit was handled above.
-                                    if (!hasAddedMainnetCell && actualFeeData.depositOpen !== 1) {
-                                        const mainnetTd = document.createElement('td');
-                                        mainnetTd.textContent = actualFeeData.chainDesc;
-                                        mainnetTd.rowSpan = totalRowsForCurrentMainnet;
-                                        rowWithdraw.appendChild(mainnetTd);
-                                        hasAddedMainnetCell = true;
-                                    }
-
-                                    const typeTdWithdraw = document.createElement('td');
-                                    typeTdWithdraw.textContent = '提现';
-                                    rowWithdraw.appendChild(typeTdWithdraw);
-
-                                    const minAmountTdWithdraw = document.createElement('td');
-                                    minAmountTdWithdraw.textContent = actualFeeData.withdrawMin;
-                                    rowWithdraw.appendChild(minAmountTdWithdraw);
-
-                                    const dailyMaxAmountTdWithdraw = document.createElement('td');
-                                    dailyMaxAmountTdWithdraw.textContent = actualFeeData.withdrawMaxDay || '--';
-                                    rowWithdraw.appendChild(dailyMaxAmountTdWithdraw);
-
-                                    const feeTdWithdraw = document.createElement('td');
-                                    feeTdWithdraw.textContent = `${actualFeeData.defaultFee} ${coinSymbol}`;
-                                    rowWithdraw.appendChild(feeTdWithdraw);
-
-                                    feeTableBody.appendChild(rowWithdraw);
-                                }
-                            });
-                        }
-                    });
-                    feeDataTable.classList.remove('hidden'); // Show table
+                    allFeeData = data.data.feeDataList; // Store the original fetched data
+                    // Ensure the table is visible if data is fetched successfully
+                    DOMElements.feeDataTable.classList.remove('hidden');
+                    filterTable(DOMElements.searchInputRechargeWithdraw.value); // Filter and render initial table with any existing search query
                 } else {
-                    responseContainer.innerHTML = `<p class="text-red-500">Error fetching data: ${data.msg || 'Unknown error'}</p>`;
+                    // If API returns error or no data, show no results message
+                    DOMElements.feeDataTable.classList.add('hidden');
+                    DOMElements.noSearchResults.classList.remove('hidden');
+                    DOMElements.paginationControls.classList.add('hidden');
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
-                responseContainer.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+                // If fetch fails, show no results message
+                DOMElements.feeDataTable.classList.add('hidden');
+                DOMElements.noSearchResults.classList.remove('hidden');
+                DOMElements.paginationControls.classList.add('hidden');
             } finally {
-                loadingSpinner.classList.add('hidden'); // Hide loading
+                DOMElements.loadingSpinner.classList.add('hidden'); // Hide loading
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to elements once the DOM is ready and store them in DOMElements object
+            DOMElements = {
+                responseContainer: document.getElementById('response-container'),
+                loadingSpinner: document.getElementById('loadingSpinner'),
+                feeDataTable: document.getElementById('feeDataTable'),
+                feeTableBody: document.getElementById('feeTableBody'),
+                currentDateTimeElement: document.getElementById('currentDateTime'), 
+                rechargeWithdrawContent: document.getElementById('rechargeWithdrawContent'),
+                tradeContent: document.getElementById('tradeContent'),
+                searchInputRechargeWithdraw: document.getElementById('searchInputRechargeWithdraw'),
+                searchInputTrade: document.getElementById('searchInputTrade'),
+                tradeCoinSelect: document.getElementById('tradeCoinSelect'),
+                noSearchResults: document.getElementById('noSearchResults'),
+                paginationControls: document.getElementById('paginationControls'),
+                prevPageButton: document.getElementById('prevPage'),
+                nextPageButton: document.getElementById('nextPage'),
+                pageNumbersContainer: document.getElementById('pageNumbers')
+            };
+
+            // Function to update the current date and time
+            function updateDateTime() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                DOMElements.currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
+
+            // Update date and time immediately
+            updateDateTime();
+
+            // Event listeners for primary tabs (e.g., "交易", "充值 / 提现")
+            document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
+                    event.target.classList.add('active');
+                    
+                    // Hide all content containers first
+                    DOMElements.rechargeWithdrawContent.classList.add('hidden');
+                    DOMElements.tradeContent.classList.add('hidden');
+                    DOMElements.feeDataTable.classList.add('hidden'); // Hide data table
+                    DOMElements.noSearchResults.classList.add('hidden'); // Hide no search results message
+                    DOMElements.loadingSpinner.classList.add('hidden'); // Hide loading spinner
+                    DOMElements.paginationControls.classList.add('hidden'); // Hide pagination on tab switch
+
+                    if (event.target.dataset.tab === 'recharge-withdraw') {
+                        DOMElements.rechargeWithdrawContent.classList.remove('hidden');
+                        DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
+                        currentPage = 1; // Reset to first page
+                        fetchFeeData();
+                    } else if (event.target.dataset.tab === 'trade') {
+                        DOMElements.tradeContent.classList.remove('hidden');
+                        DOMElements.searchInputTrade.value = ''; // Clear search input
+                        // When switching to '交易' tab, ensure '现货交易' is active by default
+                        document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
+                        document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
+                        
+                        // Set initial state for trade tab
+                        DOMElements.tradeCoinSelect.disabled = false; // Ensure it's enabled for spot by default
+                        DOMElements.tradeCoinSelect.value = 'USDT'; // Reset to USDT for spot
+                        // For '交易' tab, we don't fetch data immediately or show initial message
+                        // You might want to fetch data for '现货交易' by default here if needed
+                        // For now, it will just show the trade content UI.
+                    }
+                });
+            });
+
+            // Event listeners for auth level tabs (within recharge/withdraw content)
+            document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
+                    event.target.classList.add('active');
+                    currentAuthLevel = event.target.dataset.auth;
+                    DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
+                    currentPage = 1; // Reset to first page
+                    fetchFeeData();
+                });
+            });
+
+            // Event listeners for secondary trade type tabs (within trade content)
+            document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
+                    event.target.classList.add('active');
+                    currentTradeType = event.target.dataset.tradeType;
+                    
+                    if (currentTradeType === 'contract') {
+                        DOMElements.tradeCoinSelect.value = 'USDT'; // Set to USDT
+                        DOMElements.tradeCoinSelect.disabled = true; // Disable selection
+                    } else { // spot
+                        DOMElements.tradeCoinSelect.disabled = false; // Enable selection
+                    }
+
+                    console.log(`Trade type switched to: ${currentTradeType}`);
+                    // For now, no data fetching for trade tab, just UI switch
+                });
+            });
+
+            // Event listener for trade coin select
+            DOMElements.tradeCoinSelect.addEventListener('change', (event) => {
+                currentTradeCoin = event.target.value;
+                console.log(`Trade coin selected: ${currentTradeCoin}`);
+                // Add logic here to update trade content/data based on selected coin
+            });
+
+            // Event listener for search input in recharge/withdraw
+            DOMElements.searchInputRechargeWithdraw.addEventListener('input', () => {
+                currentPage = 1; // Reset to first page on new search
+                filterTable(DOMElements.searchInputRechargeWithdraw.value);
+            });
+
+            // Event listener for search input in trade (currently no filtering logic implemented for trade data)
+            DOMElements.searchInputTrade.addEventListener('input', () => {
+                console.log(`Searching trade data for: ${DOMElements.searchInputTrade.value}`);
+                // Implement trade data filtering logic here if needed
+            });
+
+            // Pagination button event listeners
+            DOMElements.prevPageButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+
+            DOMElements.nextPageButton.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredAndSearchedData.length / displayPageSize);
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+
+            // Initial fetch when the page loads (for recharge/withdraw tab by default)
+            document.querySelector('.tab-button[data-tab="recharge-withdraw"]').classList.add('active');
+            DOMElements.rechargeWithdrawContent.classList.remove('hidden');
+            DOMElements.tradeContent.classList.add('hidden'); // Ensure trade content is hidden initially
+            fetchFeeData();
+        });
     </script>
 </body>
 </html>
