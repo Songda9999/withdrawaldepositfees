@@ -33,7 +33,7 @@
 
         // Function to make the API call and process the response
         async function fetchFeeData() {
-            const url = 'https://withdrawchargefee.sokdana2233.workers.dev';  // Cloudflare Worker URL
+            const url = 'https://openapi.100ex.com/open/common/getWithdrawRechargeFee'; 
             const postData = {
                 authLevel: "1",
                 pageNumber: 1,
@@ -44,7 +44,7 @@
             responseContainer.innerHTML = 'Loading...';  // Show loading message
 
             try {
-                // Send the POST request to Cloudflare Worker
+                // Send the POST request to the API
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
