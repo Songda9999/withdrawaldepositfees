@@ -3,49 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test API Fee Data</title>
+    <title>手续费率 (Fee Rates)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f8fa;
         }
-        .response {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        /* Styles for the tab groups (reverted to original simple border-bottom) */
+        .tab-group {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb; /* Light gray border for the group */
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent; /* Default transparent border */
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+        .tab-button:hover {
+            color: #374151;
+            background-color: #f3f4f6; /* Light hover background */
+        }
+        .tab-button.active {
+            color: #1a1a1a;
+            font-weight: 600;
+            border-color: #1a1a1a; /* Active bottom border */
+            background-color: transparent; /* Transparent background for active tab */
+            border-left: none; /* Remove extra borders */
+            border-right: none;
+            border-top: none;
+            box-shadow: none; /* Remove shadow */
+            border-radius: 0; /* Remove border radius */
+        }
+        /* Ensure first and last active tabs do not have rounded corners or extra borders */
+        .tab-button.active:first-child {
+            border-top-left-radius: 0;
+        }
+        .tab-button.active:last-child {
+            border-top-right-radius: 0;
+        }
+
+        .table-header th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .table-row td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        .table-row:last-child td {
+            border-bottom: none;
+        }
+        .search-input {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 250px;
+            font-size: 0.875rem;
+            /* Adjusted padding to make space for the icon */
+            padding-left: 36px; /* Increased padding-left to move text away from icon */
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px; /* Adjusted left position for the icon */
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af; /* A slightly lighter gray for the icon */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #1a1a1a;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body>
-    <h1>Test API Fee Data</h1>
-    
-    <!-- Button to trigger API request -->
-    <button id="getFeeDataButton">Get Fee Data</button>
-    
-    <!-- Area where response data will be displayed -->
-    <div class="response" id="response-container">
-        <!-- The response from the API will be displayed here -->
+<body class="antialiased">
+    <div class="container">
+        <h1 class="text-3xl font-semibold text-gray-900 mb-2">手续费率</h1>
+        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">加载中...</p>
+
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex tab-group"> <!-- Main tabs -->
+                <button class="tab-button active" data-tab="recharge-withdraw">充值 / 提现</button>
+                <!-- Add other tabs if needed, e.g., <button class="tab-button" data-tab="trade">交易</button> -->
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex tab-group"> <!-- Auth level tabs -->
+                    <button class="tab-button active" data-auth="0">未认证</button>
+                    <button class="tab-button" data-auth="1">L1</button>
+                    <button class="tab-button" data-auth="2">L2</button>
+                </div>
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="搜索" class="search-input focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <svg class="search-icon" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div id="response-container" class="min-h-48 flex items-center justify-center">
+            <div class="loading-spinner hidden" id="loadingSpinner"></div>
+            <p id="initialMessage" class="text-gray-500">点击 "充值 / 提现" 按钮获取数据</p>
+            <div id="feeDataTable" class="w-full hidden">
+                <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                    <thead>
+                        <tr class="table-header">
+                            <th>币种</th>
+                            <th>主网类型</th>
+                            <th>业务</th>
+                            <th>最小数量</th>
+                            <th>每日最大数量</th>
+                            <th>手续费</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feeTableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Add an event listener to the button instead of using 'onclick' in HTML
-        document.getElementById('getFeeDataButton').addEventListener('click', fetchFeeData);
+        const API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
+        let currentAuthLevel = "0"; // Default auth level
 
-        // Function to make the API call and process the response
-        async function fetchFeeData() {
-            const url = 'https://openapi.100ex.com/open/common/getWithdrawRechargeFee';
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to elements once the DOM is ready
+            const responseContainer = document.getElementById('response-container');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const initialMessage = document.getElementById('initialMessage');
+            const feeDataTable = document.getElementById('feeDataTable');
+            const feeTableBody = document.getElementById('feeTableBody');
+            const currentDateTimeElement = document.getElementById('currentDateTime');
+
+            // Function to update the current date and time
+            function updateDateTime() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
+
+            // Update date and time immediately and then every second
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            // Event listeners for main tabs (e.g., "充值 / 提现")
+            document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
+                    event.target.classList.add('active');
+                    // Add specific functionality here if different tabs require different actions
+                });
+            });
+
+            // Event listeners for auth level tabs
+            document.querySelectorAll('.tab-button[data-auth]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    document.querySelectorAll('.tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
+                    event.target.classList.add('active');
+                    currentAuthLevel = event.target.dataset.auth;
+                    // Pass the element references to the fetchFeeData function
+                    fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
+                });
+            });
+
+            // Initial fetch when the page loads
+            fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
+
+            // Set up interval to fetch data every 10 seconds (10000 milliseconds)
+            setInterval(() => {
+                fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody);
+            }, 10000); // Fetch every 10 seconds
+        });
+
+        async function fetchFeeData(responseContainer, loadingSpinner, initialMessage, feeDataTable, feeTableBody) {
+            // Show loading, hide initial message and table
+            initialMessage.classList.add('hidden');
+            feeDataTable.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            responseContainer.classList.remove('justify-center', 'items-center'); // Adjust for table display
+
+            // Corrected: postData should be an object, not an array
             const postData = {
-                authLevel: "1",
+                authLevel: currentAuthLevel,
                 pageNumber: 1,
-                pageSize: 20
+                pageSize: 100
             };
 
-            const responseContainer = document.getElementById('response-container');
-            responseContainer.innerHTML = 'Loading...';  // Show loading message
-
             try {
-                // Send the POST request to the API
-                const response = await fetch(url, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -53,21 +233,63 @@
                     body: JSON.stringify(postData)
                 });
 
-                console.log("API response:", response);  // Log the entire response for debugging
-
-                // Parse JSON response
                 const data = await response.json();
 
-                if (data && data.code === 0) {
-                    // Display the API response
-                    responseContainer.innerHTML = JSON.stringify(data, null, 2);
+                if (data && data.code === 0 && data.data && data.data.list) {
+                    feeTableBody.innerHTML = ''; // Clear previous data
+                    data.data.list.forEach(item => {
+                        // Assuming 'item.feeList' contains the recharge/withdraw details
+                        if (item.feeList && item.feeList.length > 0) {
+                            item.feeList.forEach((feeItem, index) => {
+                                const row = document.createElement('tr');
+                                row.classList.add('table-row');
+
+                                // Only display coin and mainnet type for the first entry of a coin
+                                if (index === 0) {
+                                    const coinTd = document.createElement('td');
+                                    coinTd.textContent = item.coin;
+                                    coinTd.rowSpan = item.feeList.length; // Span rows for coin
+                                    row.appendChild(coinTd);
+
+                                    const mainnetTd = document.createElement('td');
+                                    mainnetTd.textContent = feeItem.mainNetType;
+                                    mainnetTd.rowSpan = 1; // This will be dynamic based on the actual data structure
+                                    row.appendChild(mainnetTd);
+                                } else {
+                                    const mainnetTd = document.createElement('td');
+                                    mainnetTd.textContent = feeItem.mainNetType;
+                                    row.appendChild(mainnetTd);
+                                }
+
+                                const typeTd = document.createElement('td');
+                                typeTd.textContent = feeItem.type === 1 ? '充值' : '提现'; // 1 for recharge, 2 for withdraw
+                                row.appendChild(typeTd);
+
+                                const minAmountTd = document.createElement('td');
+                                minAmountTd.textContent = feeItem.minAmount;
+                                row.appendChild(minAmountTd);
+
+                                const dailyMaxAmountTd = document.createElement('td');
+                                dailyMaxAmountTd.textContent = feeItem.dailyMaxAmount || '--'; // Use '--' if not available
+                                row.appendChild(dailyMaxAmountTd);
+
+                                const feeTd = document.createElement('td');
+                                feeTd.textContent = `${feeItem.fee} ${item.coin}`;
+                                row.appendChild(feeTd);
+
+                                feeTableBody.appendChild(row);
+                            });
+                        }
+                    });
+                    feeDataTable.classList.remove('hidden'); // Show table
                 } else {
-                    // Display any error message from the API
-                    responseContainer.innerHTML = 'Error fetching data: ' + (data.msg || 'Unknown error');
+                    responseContainer.innerHTML = `<p class="text-red-500">Error fetching data: ${data.msg || 'Unknown error'}</p>`;
                 }
             } catch (error) {
-                console.error("Error fetching data:", error);  // Log any errors for debugging
-                responseContainer.innerHTML = 'Error: ' + error.message;
+                console.error("Error fetching data:", error);
+                responseContainer.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+            } finally {
+                loadingSpinner.classList.add('hidden'); // Hide loading
             }
         }
     </script>
