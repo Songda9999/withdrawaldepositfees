@@ -125,10 +125,6 @@
         #tradeCoinSelect:disabled + svg {
             display: none;
         }
-        /* Removed fixed width for searchInputTrade to allow w-full */
-        /* #searchInputTrade {
-            width: 200px;
-        } */
         /* General search icon styling (inside input) */
         .search-icon {
             position: absolute;
@@ -373,7 +369,7 @@
 </head>
 <body class="antialiased">
     <div class="container">
-        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">加载中...</p>
+        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">更新时间: 加载中...</p>
 
         <div class="mb-6">
             <!-- Primary Tabs -->
@@ -1033,7 +1029,8 @@
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
-                DOMElements.currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                // Changed to innerHTML to allow <br> for line break
+                DOMElements.currentDateTimeElement.innerHTML = `更新时间:<br>${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
             }
 
             // Update date and time immediately
@@ -1057,7 +1054,6 @@
                         DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
                         fetchFeeData(); // Call existing function for recharge/withdraw
                     } else if (currentActiveTab === 'trade') {
-                        // Corrected typo from DOMEElements to DOMElements
                         DOMElements.tradeContent.classList.remove('hidden');
                         DOMElements.searchInputTrade.value = ''; // Clear search input
                         // When switching to '交易' tab, ensure '现货交易' is active by default
