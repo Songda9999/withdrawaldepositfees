@@ -378,12 +378,12 @@
         <div class="mb-6">
             <!-- Primary Tabs -->
             <div class="flex tab-group mb-4">
-                <button class="tab-button" data-tab="trade">交易</button>
-                <button class="tab-button active" data-tab="recharge-withdraw">充值 / 提现</button>
+                <button class="tab-button active" data-tab="trade">交易</button>
+                <button class="tab-button" data-tab="recharge-withdraw">充值 / 提现</button>
             </div>
 
             <!-- Content for "充值 / 提现" tab -->
-            <div id="rechargeWithdrawContent">
+            <div id="rechargeWithdrawContent" class="hidden">
                 <div class="flex tab-group mb-4"> <!-- Added mb-4 for spacing below auth tabs -->
                     <button class="tab-button active" data-auth="0">未认证</button>
                     <button class="tab-button" data-auth="1">L1</button>
@@ -397,7 +397,7 @@
             </div>
 
             <!-- Content for "交易" tab (initially hidden) -->
-            <div id="tradeContent" class="hidden">
+            <div id="tradeContent">
                 <!-- This flex container now holds both the secondary tabs and the coin select -->
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex secondary-tab-group">
@@ -1057,6 +1057,7 @@
                         DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
                         fetchFeeData(); // Call existing function for recharge/withdraw
                     } else if (currentActiveTab === 'trade') {
+                        // Corrected typo from DOMEElements to DOMElements
                         DOMElements.tradeContent.classList.remove('hidden');
                         DOMElements.searchInputTrade.value = ''; // Clear search input
                         // When switching to '交易' tab, ensure '现货交易' is active by default
@@ -1154,12 +1155,19 @@
                 }
             });
 
-            // Initial fetch when the page loads (for recharge/withdraw tab by default)
-            document.querySelector('.tab-button[data-tab="recharge-withdraw"]').classList.add('active');
-            DOMElements.rechargeWithdrawContent.classList.remove('hidden');
-            DOMElements.tradeContent.classList.add('hidden'); // Ensure trade content is hidden initially
-            currentActiveTab = "recharge-withdraw"; // Set initial active tab
-            fetchFeeData();
+            // Initial fetch when the page loads (for trade tab by default)
+            document.querySelector('.tab-button[data-tab="trade"]').classList.add('active');
+            DOMElements.rechargeWithdrawContent.classList.add('hidden');
+            DOMElements.tradeContent.classList.remove('hidden'); // Ensure trade content is visible initially
+            currentActiveTab = "trade"; // Set initial active tab to trade
+
+            // Ensure '现货交易' is active and select is enabled/set for initial trade tab load
+            document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
+            document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
+            DOMElements.tradeCoinSelect.disabled = false;
+            DOMElements.tradeCoinSelect.value = 'USDT';
+            currentTradeCoin = DOMElements.tradeCoinSelect.value;
+            fetchTradeFeeData(currentTradeCoin); // Fetch trade data for the initially active tab
         });
     </script>
 </body>
