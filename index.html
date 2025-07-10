@@ -125,6 +125,10 @@
         #tradeCoinSelect:disabled + svg {
             display: none;
         }
+        /* Removed fixed width for searchInputTrade to allow w-full */
+        /* #searchInputTrade {
+            width: 200px;
+        } */
         /* General search icon styling (inside input) */
         .search-icon {
             position: absolute;
@@ -369,7 +373,7 @@
 </head>
 <body class="antialiased">
     <div class="container">
-        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">更新时间: 加载中...</p>
+        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">加载中...</p>
 
         <div class="mb-6">
             <!-- Primary Tabs -->
@@ -421,7 +425,7 @@
         </div>
 
         <!-- The response-container will now dynamically manage its children's visibility -->
-        <div id="response-container" class="min-h-48 flex">
+        <div id="response-container" class="min-h-[300px] flex"> <!-- Changed min-h-48 to min-h-[300px] for more stability -->
             <div class="loading-spinner hidden" id="loadingSpinner"></div>
             <!-- Container for accordion items (Recharge/Withdraw) -->
             <div id="accordionContainer" class="w-full hidden">
@@ -455,6 +459,8 @@
         // API URLs for different data types
         const RECHARGE_WITHDRAW_API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
         const TRADE_API_URL = 'https://getexchangefee.sokdana2233.workers.dev/';
+        // New API URL for contract trading
+        const CONTRACT_TRADE_API_URL = 'https://getfuturefees.sokdana2233.workers.dev/';
 
         let currentAuthLevel = "0"; // Default auth level for recharge/withdraw
         let currentTradeType = "spot"; // Default trade type for trade tab
@@ -529,7 +535,7 @@
             DOMElements.accordionContainer.classList.add('hidden');
             DOMElements.tradeFeeDisplayContainer.classList.add('hidden');
             DOMElements.noSearchResults.classList.add('hidden');
-            DOMElements.paginationControls.classList.add('hidden'); // Always hide pagination when switching views
+            // DOMElements.paginationControls.classList.add('hidden'); // Keep pagination visible if it's meant to be persistent
 
             // Reset response-container centering classes
             DOMElements.responseContainer.classList.remove('justify-center', 'items-center');
@@ -540,6 +546,7 @@
             if (areaId === 'loading') {
                 DOMElements.loadingSpinner.classList.remove('hidden');
                 DOMElements.responseContainer.classList.add('justify-center', 'items-center'); // Center spinner
+                DOMElements.paginationControls.classList.add('hidden'); // Hide pagination during loading
             } else if (areaId === 'recharge-withdraw-data') { // Specific for recharge/withdraw accordion
                 DOMElements.accordionContainer.classList.remove('hidden');
                 DOMElements.paginationControls.classList.remove('hidden'); // Pagination is for this data
@@ -551,6 +558,7 @@
                 // Add flex and centering classes only when showing no-data
                 DOMElements.noSearchResults.classList.add('flex', 'items-center', 'justify-center');
                 DOMElements.responseContainer.classList.add('justify-center', 'items-center'); // Center no data message
+                DOMElements.paginationControls.classList.add('hidden'); // Hide pagination if no data
             }
         }
 
@@ -782,35 +790,66 @@
             const endIndex = startIndex + displayPageSize;
             const paginatedData = filteredAndSearchedTradeData.slice(startIndex, endIndex);
 
-            console.log("[renderTradeFeeTable] 渲染现货交易表格。数据长度:", paginatedData.length); // Debugging line
-            console.log("[renderTradeFeeTable] 分页后的现货交易数据 (paginatedData):", paginatedData); // Debugging line: Log the actual data being rendered
+            console.log("[renderTradeFeeTable] 渲染交易表格。数据长度:", paginatedData.length);
+            console.log("[renderTradeFeeTable] 分页后的交易数据 (paginatedData):", paginatedData);
 
             if (paginatedData.length === 0) {
-                console.log("[renderTradeFeeTable] paginatedData 为空，显示 '暂无数据'"); // Debugging line
+                console.log("[renderTradeFeeTable] paginatedData 为空，显示 '暂无数据'");
                 showContentArea('no-data'); // Show no search results message
             } else {
-                console.log("[renderTradeFeeTable] paginatedData 有数据，显示 'trade-data'"); // Debugging line
+                console.log("[renderTradeFeeTable] paginatedData 有数据，显示 'trade-data'");
                 showContentArea('trade-data'); // Show trade data
                 paginatedData.forEach(item => {
                     const tradeItemDiv = document.createElement('div');
                     tradeItemDiv.classList.add('trade-fee-item');
 
-                    // Updated innerHTML structure to use item.name for display
+                    let feeRowsHtml = '';
+                    let displaySymbol = '';
+
+                    if (currentTradeType === 'contract') {
+                        // For contract trading, display 4 types of fees and use item.symbol
+                        displaySymbol = item.symbol || '未知币种';
+                        feeRowsHtml = `
+                            <div class="fee-row">
+                                <span class="fee-label">开仓 Maker 费率</span>
+                                <span class="fee-value">${formatNumber(item.openMakerFee)}%</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">开仓 Taker 费率</span>
+                                <span class="fee-value">${formatNumber(item.openTakerFee)}%</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">平仓 Maker 费率</span>
+                                <span class="fee-value">${formatNumber(item.closeMakerFee)}%</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">平仓 Taker 费率</span>
+                                <span class="fee-value">${formatNumber(item.closeTakerFee)}%</span>
+                            </div>
+                        `;
+                    } else {
+                        // For spot trading, display 2 types of fees and use item.name
+                        displaySymbol = item.name || '未知币种';
+                        feeRowsHtml = `
+                            <div class="fee-row">
+                                <span class="fee-label">Maker 费率</span>
+                                <span class="fee-value">${formatNumber(item.makerFee)}%</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">Taker 费率</span>
+                                <span class="fee-value">${formatNumber(item.takerFee)}%</span>
+                            </div>
+                        `;
+                    }
+
                     tradeItemDiv.innerHTML = `
-                        <div class="symbol">${item.name}</div> <!-- Changed from item.symbol to item.name -->
-                        <div class="fee-row">
-                            <span class="fee-label">Maker 费率</span>
-                            <span class="fee-value">${formatNumber(item.makerFee)}%</span>
-                        </div>
-                        <div class="fee-row">
-                            <span class="fee-label">Taker 费率</span>
-                            <span class="fee-value">${formatNumber(item.takerFee)}%</span>
-                        </div>
+                        <div class="symbol">${displaySymbol}</div>
+                        ${feeRowsHtml}
                     `;
                     DOMElements.tradeFeeDisplayContainer.appendChild(tradeItemDiv);
-                    console.log("[renderTradeFeeTable] 已将交易项添加到容器:", tradeItemDiv); // Debugging line: Confirm element is appended
+                    console.log("[renderTradeFeeTable] 已将交易项添加到容器:", tradeItemDiv);
                 });
-                console.log("[renderTradeFeeTable] tradeFeeDisplayContainer 当前子元素数量:", DOMElements.tradeFeeDisplayContainer.children.length); // NEW DEBUGGING LINE
+                console.log("[renderTradeFeeTable] tradeFeeDisplayContainer 当前子元素数量:", DOMElements.tradeFeeDisplayContainer.children.length);
             }
             renderPagination();
         }
@@ -877,15 +916,21 @@
             if (lowerCaseQuery === '') {
                 tempFilteredData = allTradeFeeData; // If query is empty, show all data
             } else {
-                // Modified filter logic to search by item.name instead of item.symbol
-                tempFilteredData = allTradeFeeData.filter(item =>
-                    item.name.toLowerCase().includes(lowerCaseQuery) // Changed from item.symbol to item.name
-                );
+                // Filter logic based on currentTradeType
+                if (currentTradeType === 'contract') {
+                    tempFilteredData = allTradeFeeData.filter(item =>
+                        item.symbol && item.symbol.toLowerCase().includes(lowerCaseQuery)
+                    );
+                } else { // spot
+                    tempFilteredData = allTradeFeeData.filter(item =>
+                        item.name && item.name.toLowerCase().includes(lowerCaseQuery)
+                    );
+                }
             }
             filteredAndSearchedTradeData = tempFilteredData; // Update the global filtered data
             currentPage = 1; // Reset to the first page after filtering
-            console.log("[filterTradeTable] 过滤后的现货交易数据 (filteredAndSearchedTradeData):", filteredAndSearchedTradeData); // Debugging line: Log data after filtering
-            console.log("[filterTradeTable] 过滤后的现货交易数据长度 (filteredAndSearchedTradeData.length):", filteredAndSearchedTradeData.length); // NEW DEBUGGING LINE
+            console.log("[filterTradeTable] 过滤后的交易数据 (filteredAndSearchedTradeData):", filteredAndSearchedTradeData); // Debugging line: Log data after filtering
+            console.log("[filterTradeTable] 过滤后的交易数据长度 (filteredAndSearchedTradeData.length):", filteredAndSearchedTradeData.length); // NEW DEBUGGING LINE
             renderTradeFeeTable(); // Render the first page of filtered data
         }
 
@@ -933,24 +978,33 @@
         async function fetchTradeFeeData(quote) {
             showContentArea('loading'); // Show loading spinner for trade data
 
-            // --- NEW LOGIC FOR CONTRACT TRADING ---
+            let apiUrl = '';
+            let postData = {};
+
             if (currentTradeType === 'contract') {
-                console.log("[fetchTradeFeeData] 当前为合约交易，跳过 API 请求，直接显示 '暂无数据'。");
-                allTradeFeeData = []; // Clear any previous data
-                filterTradeTable(''); // Trigger rendering of '暂无数据'
-                return; // Exit the function early
+                apiUrl = CONTRACT_TRADE_API_URL;
+                postData = {
+                    pageNumber: 1,
+                    pageSize: 10000 // Fetch a large number to enable client-side filtering/pagination
+                };
+                // Ensure tradeCoinSelect is disabled and set to USDT for contract
+                DOMElements.tradeCoinSelect.value = 'USDT';
+                DOMElements.tradeCoinSelect.disabled = true;
+                console.log("[fetchTradeFeeData] 当前为合约交易，使用 API:", apiUrl, "请求参数:", postData);
+            } else { // spot
+                apiUrl = TRADE_API_URL;
+                postData = {
+                    quote: quote,
+                    pageNumber: 1,
+                    pageSize: 10000
+                };
+                // Ensure tradeCoinSelect is enabled for spot
+                DOMElements.tradeCoinSelect.disabled = false;
+                console.log("[fetchTradeFeeData] 当前为现货交易，使用 API:", apiUrl, "请求参数:", postData);
             }
-            // --- END NEW LOGIC ---
 
-            const postData = {
-                quote: quote,
-                pageNumber: 1,
-                pageSize: 10000 // Fetch a large number to enable client-side filtering/pagination
-            };
-
-            console.log("[fetchTradeFeeData] 正在调用交易 API，请求参数:", postData); // Debugging line
             try {
-                const response = await fetch(TRADE_API_URL, { 
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -959,42 +1013,30 @@
                 });
 
                 const data = await response.json();
-                console.log("[fetchTradeFeeData] 交易 API 响应 (quote " + quote + "):", data); // Debugging line
+                console.log(`[fetchTradeFeeData] ${currentTradeType} API 响应:`, data);
 
-                // --- START NEW DEBUGGING LOGS ---
-                console.log("--- Evaluating fetchTradeFeeData IF condition ---");
-                console.log("Condition 1 (data exists):", !!data);
-                console.log("Condition 2 (data.code === '0'):", data && data.code === "0");
-                console.log("Condition 3 (data.data exists):", data && !!data.data);
-                // 修复点：将 data.data.feeDataList 更改为 data.data.feeList
-                console.log("Condition 4 (data.data.feeList exists):", data && data.data && !!data.data.feeList);
-                console.log("Condition 5 (data.data.feeList.length > 0):", data && data.data && data.data.feeList && data.data.feeList.length > 0);
-                console.log("--- End IF condition evaluation ---");
-                // --- END NEW DEBUGGING LOGS ---
-
-                // Corrected logic: Check if data exists, code is "0", and feeList exists and has length > 0
+                // Assuming the API returns data.data.feeList, similar to spot.
                 if (data && data.code === "0" && data.data && data.data.feeList && data.data.feeList.length > 0) {
-                    console.log("[fetchTradeFeeData] 进入 IF 块：API 响应成功且包含数据。"); // NEW LOG
-                    allTradeFeeData = data.data.feeList; // 修复点：将 data.data.feeDataList 更改为 data.data.feeList
-                    console.log("[fetchTradeFeeData] API 获取到的所有现货交易数据 (allTradeFeeData):", allTradeFeeData); // Debugging line: Log all fetched data
-                    console.log("[fetchTradeFeeData] allTradeFeeData length after fetch:", allTradeFeeData.length); // NEW DEBUGGING LINE
-                    console.log("[fetchTradeFeeData] 调用 filterTradeTable，当前搜索框内容:", DOMElements.searchInputTrade.value); // NEW DEBUGGING LINE
-                    filterTradeTable(DOMElements.searchInputTrade.value); // Apply search filter after fetching
+                    console.log(`[fetchTradeFeeData] 进入 IF 块：${currentTradeType} API 响应成功且包含数据。`);
+                    allTradeFeeData = data.data.feeList;
+                    console.log(`[fetchTradeFeeData] API 获取到的所有 ${currentTradeType} 交易数据 (allTradeFeeData):`, allTradeFeeData);
+                    console.log(`[fetchTradeFeeData] allTradeFeeData length after fetch:`, allTradeFeeData.length);
+                    console.log("[fetchTradeFeeData] 调用 filterTradeTable，当前搜索框内容:", DOMElements.searchInputTrade.value);
+                    filterTradeTable(DOMElements.searchInputTrade.value);
                 } else {
-                    console.log("[fetchTradeFeeData] 进入 ELSE 块：API 响应不符合预期或无数据。"); // NEW LOG
-                    // This block now correctly handles cases where API returns success but no data, or an actual error.
-                    if (data && data.code === "0" && data.data && data.data.feeList && data.data.feeList.length === 0) { // 修复点：将 data.data.feeDataList 更改为 data.data.feeList
-                        console.log("[fetchTradeFeeData] 交易 API 响应成功，但 feeList 为空。");
+                    console.log(`[fetchTradeFeeData] 进入 ELSE 块：${currentTradeType} API 响应不符合预期或无数据。`);
+                    if (data && data.code === "0" && data.data && data.data.feeList && data.data.feeList.length === 0) {
+                        console.log(`[fetchTradeFeeData] ${currentTradeType} API 响应成功，但 feeList 为空。`);
                     } else {
-                        console.log("[fetchTradeFeeData] 交易 API 返回错误或数据结构不符合预期:", data);
+                        console.log(`[fetchTradeFeeData] ${currentTradeType} API 返回错误或数据结构不符合预期:`, data);
                     }
-                    allTradeFeeData = []; // Ensure it's empty if no data or error
+                    allTradeFeeData = [];
                     filterTradeTable(''); // Call filter to ensure 'no-data' is shown
                 }
             } catch (error) {
-                console.error("[fetchTradeFeeData] 获取交易数据时出错:", error);
-                allTradeFeeData = []; // Ensure it's empty on error
-                filterTradeTable(''); // Call filter to ensure 'no-data' is shown
+                console.error(`[fetchTradeFeeData] 获取 ${currentTradeType} 数据时出错:`, error);
+                allTradeFeeData = [];
+                filterTradeTable('');
             }
         }
 
@@ -1029,8 +1071,7 @@
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
-                // Changed to innerHTML to allow <br> for line break
-                DOMElements.currentDateTimeElement.innerHTML = `更新时间:<br>${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                DOMElements.currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
             }
 
             // Update date and time immediately
@@ -1054,7 +1095,7 @@
                         DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
                         fetchFeeData(); // Call existing function for recharge/withdraw
                     } else if (currentActiveTab === 'trade') {
-                        DOMElements.tradeContent.classList.remove('hidden');
+                        DOMElements.tradeContent.classList.remove('hidden'); 
                         DOMElements.searchInputTrade.value = ''; // Clear search input
                         // When switching to '交易' tab, ensure '现货交易' is active by default
                         document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
@@ -1062,16 +1103,10 @@
                         document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
                         
                         // Set initial state for trade tab
-                        // Check if the currentTradeType is 'contract' when switching to 'trade' tab
-                        // If it is, disable the select and set value to USDT.
-                        // Otherwise, enable select and set value to USDT.
-                        if (currentTradeType === 'contract') {
-                            DOMElements.tradeCoinSelect.value = 'USDT'; // Set to USDT
-                            DOMElements.tradeCoinSelect.disabled = true; // Disable selection
-                        } else { // spot
-                            DOMElements.tradeCoinSelect.disabled = false; // Enable selection
-                            DOMElements.tradeCoinSelect.value = 'USDT'; // Reset to USDT for spot
-                        }
+                        currentTradeType = 'spot'; // Always default to spot when switching to trade tab
+                        DOMElements.tradeCoinSelect.disabled = false; // Enable selection
+                        DOMElements.tradeCoinSelect.value = 'USDT'; // Reset to USDT for spot
+                        
                         currentTradeCoin = DOMElements.tradeCoinSelect.value; // Ensure the variable is updated
                         console.log("[DOMContentLoaded] 切换到交易标签页。当前交易币种 (currentTradeCoin):", currentTradeCoin); // NEW DEBUGGING LINE
                         fetchTradeFeeData(currentTradeCoin); // Call new function for trade
@@ -1094,7 +1129,6 @@
             // Event listeners for secondary trade type tabs (within trade content)
             document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(button => {
                 button.addEventListener('click', (event) => {
-                    // No need for `if (event.target.disabled)` check here, as the button is no longer disabled in HTML.
                     document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
                     event.target.classList.add('active');
                     currentTradeType = event.target.dataset.tradeType;
@@ -1152,18 +1186,20 @@
             });
 
             // Initial fetch when the page loads (for trade tab by default)
-            document.querySelector('.tab-button[data-tab="trade"]').classList.add('active');
-            DOMElements.rechargeWithdrawContent.classList.add('hidden');
-            DOMElements.tradeContent.classList.remove('hidden'); // Ensure trade content is visible initially
+            document.querySelector('.tab-button[data-tab="trade"]').classList.add('active'); // Default to Trade tab
+            document.querySelector('.tab-button[data-tab="recharge-withdraw"]').classList.remove('active'); // Ensure Recharge/Withdraw is not active
+            DOMElements.tradeContent.classList.remove('hidden'); // Show Trade content
+            DOMElements.rechargeWithdrawContent.classList.add('hidden'); // Hide Recharge/Withdraw content
             currentActiveTab = "trade"; // Set initial active tab to trade
-
-            // Ensure '现货交易' is active and select is enabled/set for initial trade tab load
+            
+            // Ensure secondary tab for spot is active and fetch data for it
             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
+            currentTradeType = 'spot';
             DOMElements.tradeCoinSelect.disabled = false;
             DOMElements.tradeCoinSelect.value = 'USDT';
             currentTradeCoin = DOMElements.tradeCoinSelect.value;
-            fetchTradeFeeData(currentTradeCoin); // Fetch trade data for the initially active tab
+            fetchTradeFeeData(currentTradeCoin);
         });
     </script>
 </body>
