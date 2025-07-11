@@ -1144,6 +1144,7 @@
     var height = Math.max( body.scrollHeight, body.offsetHeight,
                            html.clientHeight, html.scrollHeight, html.offsetHeight ) + 15;
 
+    // --- 核心改动在这里 ---
     // 检查新计算的高度和上次发送的高度差距是否小于一个很小的值（例如3px）
     // 如果是，就认为高度没有实质变化，直接退出函数，不再发送消息
     if (Math.abs(height - lastSentHeight) < 3) {
