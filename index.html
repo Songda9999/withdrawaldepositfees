@@ -1136,27 +1136,49 @@
 
 <script type="text/javascript">
   var lastSentHeight = 0;
+  var resizeTimer; // 定义一个计时器变量，用于“延迟调度”
 
-  function sendHeight() {
-    // V6版本：使用最稳定可靠的 scrollHeight，并且不再添加任何多余的缓冲
+  // 步骤1: 负责计算和发送高度的函数
+  function calculateAndSendHeight() {
     var height = document.documentElement.scrollHeight;
 
-    // 这个判断逻辑现在会生效，因为高度计算稳定了
+    // 如果高度变化不大，就直接返回，防止不必要的刷新
     if (Math.abs(height - lastSentHeight) < 3) {
-      return; 
+      return;
     }
-    
+
     lastSentHeight = height;
 
-    // 我们用一个新的日志来确认 V6 版本是否生效
-    console.log("V6 最终版脚本运行，发送稳定高度:", height);
+    // 使用新的日志，方便我们确认V7脚本是否生效
+    console.log("V7 (持续监听版) 运行，发送新高度:", height);
     parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
   }
 
-  window.addEventListener('load', sendHeight);
-  window.addEventListener('resize', sendHeight);
-  var observer = new MutationObserver(sendHeight);
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+  // 步骤2: “调度员”函数，负责接收所有事件，并安排高度计算任务
+  function scheduleHeightSend() {
+    // 先清除任何还未执行的旧计时
+    clearTimeout(resizeTimer);
+    // 然后安排一个新的计时任务，在150毫秒后执行高度计算
+    // 这个延迟是为了给浏览器足够的时间来重新渲染页面内容
+    resizeTimer = setTimeout(calculateAndSendHeight, 150);
+  }
+
+  // --- 事件监听器 ---
+
+  // 页面初次加载时，安排一次高度计算
+  window.addEventListener('load', scheduleHeightSend);
+  // 浏览器窗口大小变化时，安排一次高度计算
+  window.addEventListener('resize', scheduleHeightSend);
+
+  // 这是最重要的部分：创建一个“变动观察员”
+  // 它会持续监听iframe内部所有内容的变化
+  var observer = new MutationObserver(scheduleHeightSend);
+  observer.observe(document.body, {
+    attributes: true,    // 监听属性变化
+    childList: true,     // 监听子元素的增加或删除
+    subtree: true,       // 监听所有后代元素
+    characterData: true  // 监听文本内容变化
+  });
 </script>
 </body>
 </html>
