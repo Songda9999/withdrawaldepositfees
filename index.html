@@ -1136,48 +1136,40 @@
 
 <script type="text/javascript">
   var lastSentHeight = 0;
-  var resizeTimer; // 定义一个计时器变量，用于“延迟调度”
+  var resizeTimer; 
 
-  // 步骤1: 负责计算和发送高度的函数
   function calculateAndSendHeight() {
     var height = document.documentElement.scrollHeight;
 
-    // 如果高度变化不大，就直接返回，防止不必要的刷新
     if (Math.abs(height - lastSentHeight) < 3) {
       return;
     }
-
+    
     lastSentHeight = height;
 
-    // 使用新的日志，方便我们确认V7脚本是否生效
-    console.log("V7 (持续监听版) 运行，发送新高度:", height);
+    console.log("✅ V8 (终极健壮版) 运行，发送新高度:", height);
     parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
   }
 
-  // 步骤2: “调度员”函数，负责接收所有事件，并安排高度计算任务
   function scheduleHeightSend() {
-    // 先清除任何还未执行的旧计时
     clearTimeout(resizeTimer);
-    // 然后安排一个新的计时任务，在150毫秒后执行高度计算
-    // 这个延迟是为了给浏览器足够的时间来重新渲染页面内容
     resizeTimer = setTimeout(calculateAndSendHeight, 150);
   }
 
-  // --- 事件监听器 ---
-
-  // 页面初次加载时，安排一次高度计算
+  // --- Event Listeners ---
   window.addEventListener('load', scheduleHeightSend);
-  // 浏览器窗口大小变化时，安排一次高度计算
   window.addEventListener('resize', scheduleHeightSend);
 
-  // 这是最重要的部分：创建一个“变动观察员”
-  // 它会持续监听iframe内部所有内容的变化
   var observer = new MutationObserver(scheduleHeightSend);
-  observer.observe(document.body, {
-    attributes: true,    // 监听属性变化
-    childList: true,     // 监听子元素的增加或删除
-    subtree: true,       // 监听所有后代元素
-    characterData: true  // 监听文本内容变化
+
+  // --- 核心改动在这里 ---
+  // 我们不再观察 body，而是观察整个文档的根节点 <html>
+  // 这样即使内部程序替换了 body，观察员也不会失效
+  observer.observe(document.documentElement, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+    characterData: true
   });
 </script>
 </body>
