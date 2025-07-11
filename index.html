@@ -9,28 +9,25 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff; /* Changed to pure white to remove subtle background shadow effect */
-            margin: 0 auto; /* Adjusted for better mobile spacing */
+            background-color: #ffffff;
         }
         .container {
             max-width: 1000px;
-            margin: 10px auto; /* Adjusted for better mobile spacing */
-            padding: 10px; /* Adjusted for better mobile spacing */
+            margin: 10px auto;
+            padding: 10px;
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        /* Apply larger margins and padding for small screens and up */
-        @media (min-width: 640px) { /* Tailwind's 'sm' breakpoint */
+        @media (min-width: 640px) {
             .container {
                 margin: 20px auto;
                 padding: 20px;
             }
         }
-        /* Styles for the tab groups */
         .tab-group {
             display: flex;
-            border-bottom: 1px solid #e5e7eb; /* Light gray border for the group */
+            border-bottom: 1px solid #e5e7eb;
         }
         .tab-button {
             padding: 10px 20px;
@@ -38,106 +35,167 @@
             font-weight: 500;
             color: #6b7280;
             transition: all 0.2s ease-in-out;
-            border-bottom: 2px solid transparent; /* Default transparent border */
-            white-space: nowrap; /* Prevent text wrapping */
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
         }
         .tab-button:hover {
             color: #374151;
-            background-color: #f3f4f6; /* Light hover background */
+            background-color: #f3f4f6;
         }
         .tab-button.active {
             color: #1a1a1a;
             font-weight: 600;
-            border-color: #1a1a1a; /* Active bottom border */
-            background-color: transparent; /* Transparent background for active tab */
-            border-left: none; /* Remove extra borders */
+            border-color: #1a1a1a;
+            background-color: transparent;
+            border-left: none;
             border-right: none;
             border-top: none;
-            box-shadow: none; /* Remove shadow */
-            border-radius: 0; /* Remove border radius */
+            box-shadow: none;
+            border-radius: 0;
         }
 
-        /* Styles for secondary tabs (e.g., 现货交易/合约交易) */
         .secondary-tab-group {
             display: flex;
         }
         .secondary-tab-button {
-            padding: 10px 20px; /* Match primary tab padding for consistency */
+            padding: 10px 20px;
             cursor: pointer;
             font-weight: 500;
-            color: #6b7280; /* Inactive text color */
-            background-color: transparent; /* No background color for inactive */
-            border-bottom: 2px solid transparent; /* Default transparent bottom border */
+            color: #6b7280;
+            background-color: transparent;
+            border-bottom: 2px solid transparent;
             white-space: nowrap;
             transition: all 0.2s ease-in-out;
-            border-radius: 0; /* No border radius */
-            margin-right: 0; /* Remove margin-right if not needed for spacing */
+            border-radius: 0;
+            margin-right: 0;
         }
-        .secondary-tab-button:hover:not(:disabled) { /* Only apply hover if not disabled */
+        .secondary-tab-button:hover:not(:disabled) {
             color: #374151;
-            background-color: #f3f4f6; /* Light hover background */
+            background-color: #f3f4f6;
         }
         .secondary-tab-button.active {
-            color: #1a1a1a; /* Active text color */
+            color: #1a1a1a;
             font-weight: 600;
-            border-color: #1a1a1a; /* Active bottom border */
-            background-color: transparent; /* Transparent background for active */
+            border-color: #1a1a1a;
+            background-color: transparent;
         }
-        /* Style for disabled secondary tab button */
         .secondary-tab-button:disabled {
             cursor: not-allowed;
-            opacity: 0.5; /* Make it look disabled */
-            color: #9ca3af; /* Gray out text */
-            background-color: transparent; /* Keep background transparent */
-            border-color: transparent; /* Keep border transparent */
+            opacity: 0.5;
+            color: #9ca3af;
+            background-color: transparent;
+            border-color: transparent;
         }
-
-        /* General input styling for search fields and select */
+        
         .general-input {
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            padding: 6px 10px; /* Reduced padding */
+            padding: 6px 10px;
             font-size: 0.875rem;
-            transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out; /* Smooth transition for border and background */
-        }
-        .general-input:focus {
-            border-color: #00C49A; /* Teal/Turquoise color on focus as per image */
-            outline: none; /* Remove default outline */
-        }
-        /* Style for disabled select/input */
-        .general-input:disabled {
-            background-color: #f3f4f6; /* Lighter gray background for disabled */
-            color: #9ca3af; /* Gray out text */
-            cursor: not-allowed;
-            border-color: #e5e7eb; /* Keep border light gray */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
 
-        /* Specific styles for search input with icon */
+        .general-input:focus {
+            border-color: #00C49A;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 196, 154, 0.2);
+        }
+        
+        .general-input:disabled {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-color: #e5e7eb;
+        }
+        
         .search-input-with-icon {
-            padding-left: 30px; /* Added padding-left to make space for the icon */
+            padding-left: 30px;
         }
-        /* Specific styles for trade tab search and select inputs */
-        #tradeCoinSelect {
-            width: 100px; /* Smaller width for coin select */
-            padding-right: 25px; /* Adjust padding for dropdown arrow */
-        }
-        /* Hide the dropdown arrow when the select is disabled */
-        #tradeCoinSelect:disabled + svg {
-            display: none;
-        }
-        /* Removed fixed width for searchInputTrade to allow w-full */
-        /* #searchInputTrade {
-            width: 200px;
-        } */
-        /* General search icon styling (inside input) */
+        
         .search-icon {
             position: absolute;
-            left: 8px; /* Position icon inside input */
+            left: 8px;
             top: 50%;
             transform: translateY(-50%);
             color: #9ca3af;
-            pointer-events: none; /* Make icon non-interactive so clicks go to input */
+            pointer-events: none;
         }
+
+        /* --- Custom Select Dropdown Styles --- */
+        .custom-select-container {
+            position: relative;
+            width: 100px;
+        }
+        .custom-select-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px 25px 6px 10px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .custom-select-container.disabled .custom-select-box {
+             background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-color: #e5e7eb;
+        }
+         .custom-select-container.disabled .custom-select-arrow {
+            display:none;
+         }
+
+        .custom-select-box:hover, .custom-select-box.open {
+            border-color: #00C49A;
+            box-shadow: 0 0 0 4px rgba(0, 196, 154, 0.2);
+        }
+        .custom-select-arrow {
+            color: #9ca3af;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .custom-options {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: scaleY(0.95);
+            transform-origin: top;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out, visibility 0.2s;
+        }
+
+        .custom-options.open {
+            opacity: 1;
+            visibility: visible;
+            transform: scaleY(1);
+        }
+
+        .custom-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .custom-option:hover {
+            background-color: #f3f4f6;
+        }
+        .custom-option.selected {
+            font-weight: 700;
+            background-color: #ffffff; /* No background for selected item */
+        }
+        /* --- End Custom Select --- */
+
         .loading-spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
             border-left-color: #1a1a1a;
@@ -156,14 +214,13 @@
             padding: 40px 20px;
             color: #6b7280;
             font-size: 1rem;
-            height: 100%; /* Ensure it takes full height of parent to center vertically */
-            width: 100%; /* Ensure it takes full width to allow horizontal centering */
+            height: 100%;
+            width: 100%;
         }
 
-        /* Pagination styles */
         .pagination-button, .page-number-button {
-            padding: 8px; /* Adjusted padding for circular buttons */
-            border-radius: 50%; /* Make buttons circular */
+            padding: 8px;
+            border-radius: 50%;
             border: 1px solid #e5e7eb;
             background-color: #ffffff;
             cursor: pointer;
@@ -173,16 +230,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px; /* Explicit width for circular buttons */
-            height: 36px; /* Explicit height for circular buttons */
+            width: 36px;
+            height: 36px;
         }
         .pagination-button:hover:not(:disabled), .page-number-button:hover:not(.active) {
             background-color: #f3f4f6;
             color: #374151;
         }
         .page-number-button.active {
-            background-color: #1a1a1a; /* Dark background for active page */
-            color: #ffffff; /* White text for active page */
+            background-color: #1a1a1a;
+            color: #ffffff;
             border-color: #1a1a1a;
         }
         .pagination-button:disabled {
@@ -190,190 +247,165 @@
             opacity: 0.5;
         }
         .page-number-button + .page-number-button {
-            margin-left: 8px; /* Space between page number buttons */
+            margin-left: 8px;
         }
 
-        /* Accordion Styles */
         .coin-accordion-item {
             background-color: #ffffff;
-            border-radius: 12px; /* Slightly more rounded corners */
-            margin-bottom: 12px; /* Increased margin for better separation */
-            box-shadow: none; /* Removed box-shadow */
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: none;
             overflow: hidden;
-            transition: transform 0.2s ease-in-out; /* Smooth transition for hover */
+            transition: transform 0.2s ease-in-out;
         }
-
         .coin-accordion-item:hover {
             transform: translateY(-2px);
-            box-shadow: none; /* Removed box-shadow on hover */
+            box-shadow: none;
         }
-
         .coin-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 20px; /* Increased padding for a more spacious feel */
+            padding: 16px 20px;
             cursor: pointer;
             font-weight: 600;
             color: #374151;
             transition: background-color 0.2s ease-in-out;
-            background-color: #ffffff; /* Changed to pure white */
+            background-color: #ffffff;
         }
-
         .coin-header:hover {
-            background-color: #ffffff; /* Changed to pure white */
+            background-color: #ffffff;
         }
-
         .coin-header.expanded {
-            background-color: #ffffff; /* Changed to pure white */
-            border-bottom: 1px solid #e5e7eb; /* Add border when expanded */
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
         }
-
         .coin-icon {
-            width: 28px; /* Slightly larger icons */
+            width: 28px;
             height: 28px;
-            margin-right: 12px; /* Increased margin */
+            margin-right: 12px;
             border-radius: 50%;
             object-fit: contain;
         }
-
         .coin-symbol-main {
-            font-size: 1.1rem; /* Slightly larger font size */
-            font-weight: 700; /* Bolder font weight */
-            color: #1a1a1a; /* Darker for the main symbol */
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a1a1a;
         }
-
         .expand-icon {
             transition: transform 0.3s ease-in-out;
         }
-
         .expand-icon.rotate-180 {
             transform: rotate(180deg);
         }
-
         .coin-details-content {
-            padding: 0 20px; /* Initial padding, will be adjusted by open/close */
+            padding: 0 20px;
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
-            background-color: #ffffff; /* Ensure content background is white */
+            background-color: #ffffff;
         }
-
         .coin-details-content.open {
-            max-height: 9999px; /* Very large value for smoother transition and to prevent clipping */
-            padding: 20px; /* Padding when open */
+            max-height: 9999px;
+            padding: 20px;
         }
-
         .mainnet-section {
-            padding: 15px 0; /* Increased vertical padding */
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* Very subtle border */
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
-
         .mainnet-section:last-child {
-            border-bottom: none; /* No border for the last section */
+            border-bottom: none;
         }
-
         .mainnet-type {
             font-weight: 600;
             color: #374151;
-            margin-bottom: 10px; /* Increased margin */
-            font-size: 1rem; /* Slightly larger font */
+            margin-bottom: 10px;
+            font-size: 1rem;
         }
-
         .fee-type-section {
-            margin-bottom: 16px; /* Increased margin */
+            margin-bottom: 16px;
         }
-
         .fee-type-section:last-child {
             margin-bottom: 0;
         }
-
         .fee-type-label {
-            font-weight: 600; /* Bolder label */
-            color: #00C49A; /* Teal/Turquoise color for labels */
-            margin-bottom: 6px; /* Increased margin */
-            font-size: 0.95rem; /* Slightly larger font */
+            font-weight: 600;
+            color: #00C49A;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
         }
-
         .fee-details p {
-            font-size: 0.9rem; /* Slightly larger text */
-            color: #5a626f; /* Slightly darker gray for better readability */
-            margin-bottom: 8px; /* Increased margin-bottom for more space */
-            line-height: 1.6; /* Increased line height for better readability */
+            font-size: 0.9rem;
+            color: #5a626f;
+            margin-bottom: 8px;
+            line-height: 1.6;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            min-height: 22px; /* Ensure minimum height for each line */
+            min-height: 22px;
         }
         .fee-details p span:first-child {
-            color: #4b5563; /* Label color */
+            color: #4b5563;
             font-weight: 500;
         }
         .fee-details p span:last-child {
-            color: #374151; /* Value color */
+            color: #374151;
             font-weight: 400;
         }
         .fee-details p:last-child {
             margin-bottom: 0;
         }
-
-        /* Specific styles for search input in recharge/withdraw content */
         #rechargeWithdrawContent .search-input-container {
-            width: 100%; /* Make search input container full width */
-            margin-top: 16px; /* Add some space below auth tabs */
+            width: 100%;
+            margin-top: 16px;
         }
         #rechargeWithdrawContent .search-input-container .general-input {
-            width: 100%; /* Make search input itself full width */
+            width: 100%;
         }
-
-        /* Styles for trade fee display - Updated to match image */
         .trade-fee-item {
             background-color: #ffffff;
             border-radius: 12px;
             margin-bottom: 12px;
-            padding: 16px 20px; /* Increased padding */
-            /* Removed box-shadow */
+            padding: 16px 20px;
             display: flex;
             flex-direction: column;
             transition: transform 0.2s ease-in-out;
-            border: 1px solid #f3f4f6; /* Light border as seen in image */
+            border: 1px solid #f3f4f6;
         }
         .trade-fee-item:hover {
             transform: translateY(-2px);
-            /* Removed box-shadow on hover */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Added a very subtle shadow on hover, similar to the image's subtle lift */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-        .trade-fee-item .symbol { /* This class name is now misleading, but kept for consistency */
+        .trade-fee-item .symbol {
             font-size: 1.1rem;
             font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 10px; /* Space below symbol */
+            margin-bottom: 10px;
         }
         .trade-fee-item .fee-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4px 0; /* Reduced vertical padding for rows */
-            /* Removed border-top, as it's not present in the image for individual rows */
+            padding: 4px 0;
         }
         .trade-fee-item .fee-row:first-of-type {
-            border-top: none; /* Ensure no top border for the first row */
+            border-top: none;
         }
         .trade-fee-item .fee-label {
-            font-weight: 400; /* Lighter font weight for labels */
-            color: #6b7280; /* Gray color for labels */
-            font-size: 0.95rem; /* Slightly larger font for labels */
+            font-weight: 400;
+            color: #6b7280;
+            font-size: 0.95rem;
         }
         .trade-fee-item .fee-value {
-            font-weight: 500; /* Slightly bolder for values */
-            color: #374151; /* Darker color for values */
-            font-size: 0.95rem; /* Match label font size */
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body class="antialiased">
     <div class="container">
-        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">加载中...</p>
+        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">更新时间：加载中...</p>
 
         <div class="mb-6">
             <!-- Primary Tabs -->
@@ -384,39 +416,45 @@
 
             <!-- Content for "充值 / 提现" tab -->
             <div id="rechargeWithdrawContent" class="hidden">
-                <div class="flex tab-group mb-4"> <!-- Added mb-4 for spacing below auth tabs -->
+                <div class="flex tab-group mb-4">
                     <button class="tab-button active" data-auth="0">未认证</button>
                     <button class="tab-button" data-auth="1">L1</button>
                     <button class="tab-button" data-auth="2">L2</button>
                 </div>
-                <!-- Search input for Recharge/Withdraw - now in its own full-width container -->
-                <div class="relative w-full mb-4"> <!-- Added w-full and mb-4 for spacing -->
+                <div class="relative w-full mb-4">
                     <input type="text" id="searchInputRechargeWithdraw" placeholder="搜寻币对" class="general-input search-input-with-icon w-full">
                     <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
             </div>
 
-            <!-- Content for "交易" tab (initially hidden) -->
+            <!-- Content for "交易" tab -->
             <div id="tradeContent">
-                <!-- This flex container now holds both the secondary tabs and the coin select -->
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex secondary-tab-group">
                         <button class="secondary-tab-button active" data-trade-type="spot">现货交易</button>
                         <button class="secondary-tab-button" data-trade-type="contract">合约交易</button>
                     </div>
-                    <div class="flex items-center"> <!-- Group the select together -->
-                        <div class="relative mr-4"> <!-- Add margin-right for spacing -->
-                            <select id="tradeCoinSelect" class="general-input appearance-none bg-white pr-10">
+                    <div class="flex items-center">
+                        <div class="relative mr-4">
+                            <!-- Visually hidden native select -->
+                            <select id="tradeCoinSelect" class="hidden">
                                 <option value="USDT">USDT</option>
                                 <option value="USD">USD</option>
                                 <option value="BTC">BTC</option>
                             </select>
-                            <!-- Custom dropdown arrow SVG -->
-                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                            <!-- Custom Select Implementation -->
+                            <div id="customTradeCoinSelectContainer" class="custom-select-container">
+                                <div class="custom-select-box">
+                                    <span id="customSelectValue">USDT</span>
+                                    <svg id="customSelectArrow" class="custom-select-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                </div>
+                                <div id="customOptions" class="custom-options">
+                                    <!-- Options will be populated by JS -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- Search input for Trade - Moved to its own line below the tabs/select -->
                 <div class="relative w-full mb-4">
                     <input type="text" id="searchInputTrade" placeholder="搜寻币对" class="general-input search-input-with-icon w-full">
                     <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -424,30 +462,22 @@
             </div>
         </div>
 
-        <!-- The response-container will now dynamically manage its children's visibility -->
-        <div id="response-container" class="min-h-[300px] flex"> <!-- Changed min-h-48 to min-h-[300px] for more stability -->
+        <div id="response-container" class="min-h-48 flex">
             <div class="loading-spinner hidden" id="loadingSpinner"></div>
-            <!-- Container for accordion items (Recharge/Withdraw) -->
             <div id="accordionContainer" class="w-full hidden">
-                <!-- Accordion items will be populated here -->
             </div>
-            <!-- Container for trade fee display -->
             <div id="tradeFeeDisplayContainer" class="w-full hidden">
-                <!-- Trade fee data will be rendered here. -->
             </div>
-            <!-- No search results message -->
             <div id="noSearchResults" class="no-data-message hidden w-full h-full">
                 <p>暂无数据</p>
             </div>
         </div>
 
-        <!-- Pagination Controls -->
         <div id="paginationControls" class="flex justify-center items-center mt-6 hidden">
             <button id="prevPage" class="pagination-button mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
             </button>
             <div id="pageNumbers" class="flex">
-                <!-- Page numbers will be inserted here by JavaScript -->
             </div>
             <button id="nextPage" class="pagination-button ml-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
@@ -456,30 +486,27 @@
     </div>
 
     <script>
-        // API URLs for different data types
+        // --- JavaScript 代码 ---
         const RECHARGE_WITHDRAW_API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
         const TRADE_API_URL = 'https://getexchangefee.sokdana2233.workers.dev/';
-        // New API URL for contract trading
         const CONTRACT_TRADE_API_URL = 'https://getfuturefees.sokdana2233.workers.dev/';
 
-        let currentAuthLevel = "0"; // Default auth level for recharge/withdraw
-        let currentTradeType = "spot"; // Default trade type for trade tab
-        let currentTradeCoin = "USDT"; // Default coin for trade tab
-        let currentActiveTab = "recharge-withdraw"; // Tracks the currently active primary tab
+        let currentAuthLevel = "0";
+        let currentTradeType = "spot";
+        let currentTradeCoin = "USDT";
+        let currentActiveTab = "recharge-withdraw";
 
-        let allRechargeWithdrawData = []; // To store original fetched data for recharge/withdraw
-        let filteredAndSearchedRechargeWithdrawData = []; // To store filtered data for recharge/withdraw
+        let allRechargeWithdrawData = [];
+        let filteredAndSearchedRechargeWithdrawData = [];
 
-        let allTradeFeeData = []; // To store original fetched data for trade
-        let filteredAndSearchedTradeData = []; // To store filtered data for trade
+        let allTradeFeeData = [];
+        let filteredAndSearchedTradeData = [];
 
-        let currentPage = 1; // Current page for the active tab's pagination
-        const displayPageSize = 20; // Number of items to display per page for both tabs
+        let currentPage = 1;
+        const displayPageSize = 20;
 
-        // DOM element references (cached for performance)
         let DOMElements = {};
 
-        // Define a map for coin icons. Add more entries as needed.
         const coinIconMap = {
             "BTC": "https://dlbitex-pd.oss-cn-hongkong.aliyuncs.com/upload/20231109171037843.png",
             "ETH": "https://dlbitex-pd.oss-cn-hongkong.aliyuncs.com/upload/20231109171710865.png",
@@ -503,69 +530,60 @@
             "ETC": "https://dlbitex-pd.oss-cn-hongkong.aliyuncs.com/upload/20231109171643079.png",
         };
 
-        // Helper function to format numbers, especially small ones
         function formatNumber(num) {
             if (num === null || num === undefined || num === '') {
-                return '--'; // Explicitly return '--' for null, undefined, or empty string
+                return '--';
             }
             const value = parseFloat(num);
-
             if (isNaN(value)) {
-                return '--'; // Return '--' if not a valid number after parsing
+                return '--';
             }
-
-            // If the number is very small but not zero, format it to a fixed number of decimal places
-            // For example, if it's 3e-7, it becomes 0.0000003
-            if (value > 0 && value < 0.000001) { // Numbers smaller than 1e-6
-                return value.toFixed(8).replace(/0+$/, ''); // ToFixed(8) and remove trailing zeros
+            if (value > 0 && value < 0.000001) {
+                return value.toFixed(8).replace(/0+$/, '');
             }
-            // For other numbers, keep original or apply general formatting if needed
             return value.toString();
         }
 
-        /**
-         * Controls the visibility of different content areas within the response container.
-         * Ensures only one area (loading, data, or no-data message) is visible at a time.
-         * @param {string} areaId - The ID of the area to show ('loading', 'recharge-withdraw-data', 'trade-data', or 'no-data').
-         */
         function showContentArea(areaId) {
-            console.log(`[showContentArea] 被调用，参数: ${areaId}`); // Debugging line
-            // Hide all content areas first
             DOMElements.loadingSpinner.classList.add('hidden');
             DOMElements.accordionContainer.classList.add('hidden');
             DOMElements.tradeFeeDisplayContainer.classList.add('hidden');
             DOMElements.noSearchResults.classList.add('hidden');
-            // DOMElements.paginationControls.classList.add('hidden'); // Keep pagination visible if it's meant to be persistent
-
-            // Reset response-container centering classes
+            DOMElements.paginationControls.classList.add('hidden');
             DOMElements.responseContainer.classList.remove('justify-center', 'items-center');
-            // Also remove flex from noSearchResults to prevent it from affecting layout when hidden
             DOMElements.noSearchResults.classList.remove('flex', 'items-center', 'justify-center');
 
-            // Show the requested area and apply appropriate styles
             if (areaId === 'loading') {
                 DOMElements.loadingSpinner.classList.remove('hidden');
-                DOMElements.responseContainer.classList.add('justify-center', 'items-center'); // Center spinner
-                DOMElements.paginationControls.classList.add('hidden'); // Hide pagination during loading
-            } else if (areaId === 'recharge-withdraw-data') { // Specific for recharge/withdraw accordion
+                DOMElements.responseContainer.classList.add('justify-center', 'items-center');
+            } else if (areaId === 'recharge-withdraw-data') {
                 DOMElements.accordionContainer.classList.remove('hidden');
-                DOMElements.paginationControls.classList.remove('hidden'); // Pagination is for this data
-            } else if (areaId === 'trade-data') { // Specific for trade data
+                DOMElements.paginationControls.classList.remove('hidden');
+            } else if (areaId === 'trade-data') {
                 DOMElements.tradeFeeDisplayContainer.classList.remove('hidden');
-                DOMElements.paginationControls.classList.remove('hidden'); // Pagination is also for trade data
+                DOMElements.paginationControls.classList.remove('hidden');
             } else if (areaId === 'no-data') {
                 DOMElements.noSearchResults.classList.remove('hidden');
-                // Add flex and centering classes only when showing no-data
                 DOMElements.noSearchResults.classList.add('flex', 'items-center', 'justify-center');
-                DOMElements.responseContainer.classList.add('justify-center', 'items-center'); // Center no data message
-                DOMElements.paginationControls.classList.add('hidden'); // Hide pagination if no data
+                DOMElements.responseContainer.classList.add('justify-center', 'items-center');
             }
         }
+        
+        function updateDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            DOMElements.currentDateTimeElement.textContent = `更新时间： ${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
 
-        // Function to navigate to a specific page
         function goToPage(page) {
+            updateDateTime(); 
             currentPage = page;
-            renderCurrentTabContent(); // Render content based on the active tab
+            renderCurrentTabContent();
             renderPagination();
         }
 
@@ -578,7 +596,7 @@
             }
 
             const totalPages = Math.ceil(dataToPaginate.length / displayPageSize);
-            DOMElements.pageNumbersContainer.innerHTML = ''; // Clear previous page numbers
+            DOMElements.pageNumbersContainer.innerHTML = '';
 
             if (totalPages <= 1) {
                 DOMElements.paginationControls.classList.add('hidden');
@@ -587,20 +605,16 @@
                 DOMElements.paginationControls.classList.remove('hidden');
             }
 
-            // Enable/disable Prev/Next buttons
             DOMElements.prevPageButton.disabled = currentPage === 1;
             DOMElements.nextPageButton.disabled = currentPage === totalPages;
 
-            // Render page number buttons
-            const maxPageButtons = 7; // Max number of page buttons to display
+            const maxPageButtons = 7;
             let startPage, endPage;
 
             if (totalPages <= maxPageButtons) {
-                // Display all pages if total pages are less than or equal to maxPageButtons
                 startPage = 1;
                 endPage = totalPages;
             } else {
-                // Calculate start and end pages for ellipsis
                 const middle = Math.floor(maxPageButtons / 2);
                 if (currentPage <= middle) {
                     startPage = 1;
@@ -655,42 +669,27 @@
         }
 
         function renderRechargeWithdrawTable() {
-            // This function is specifically for rendering recharge/withdraw data
-            DOMElements.accordionContainer.innerHTML = ''; // Clear previous data
-
+            DOMElements.accordionContainer.innerHTML = '';
             const startIndex = (currentPage - 1) * displayPageSize;
             const endIndex = startIndex + displayPageSize;
             const paginatedData = filteredAndSearchedRechargeWithdrawData.slice(startIndex, endIndex);
 
-            console.log(`[renderRechargeWithdrawTable] 分页后的数据长度: ${paginatedData.length}`);
-            console.log(`[renderRechargeWithdrawTable] 分页后的数据:`, paginatedData);
-
             if (paginatedData.length === 0) {
-                console.log("[renderRechargeWithdrawTable] paginatedData 为空，显示 '暂无数据'");
-                showContentArea('no-data'); // Show no search results message
+                showContentArea('no-data');
             } else {
-                console.log("[renderRechargeWithdrawTable] paginatedData 有数据，显示 'recharge-withdraw-data'");
-                showContentArea('recharge-withdraw-data'); // Show recharge/withdraw data
+                showContentArea('recharge-withdraw-data');
                 paginatedData.forEach(coinGroup => {
                     const coinSymbol = Object.keys(coinGroup)[0];
                     const feeListForCoin = coinGroup[coinSymbol];
-
                     const accordionItem = document.createElement('div');
                     accordionItem.classList.add('coin-accordion-item');
-
                     const header = document.createElement('div');
                     header.classList.add('coin-header');
-
-                    // Apply mapping for coin symbol display in the header
                     let displayCoinSymbol = coinSymbol;
                     if (coinSymbol === "BSC") {
-                        displayCoinSymbol = "BNB"; // Map BSC to BNB for display
+                        displayCoinSymbol = "BNB";
                     }
-
-                    // Determine the image source using the coinIconMap
-                    let imgSrc = coinIconMap[displayCoinSymbol] || "https://placehold.co/28x28/E5E7EB/E5E7EB"; // Default placeholder
-
-
+                    let imgSrc = coinIconMap[displayCoinSymbol] || "https://placehold.co/28x28/E5E7EB/E5E7EB";
                     header.innerHTML = `
                         <div class="flex items-center">
                             <img src="${imgSrc}" alt="${displayCoinSymbol} icon" class="coin-icon">
@@ -699,30 +698,23 @@
                         <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
                     `;
                     accordionItem.appendChild(header);
-
                     const content = document.createElement('div');
                     content.classList.add('coin-details-content');
-                    
                     if (feeListForCoin && feeListForCoin.length > 0) {
                         feeListForCoin.forEach(chainFeeItem => {
                             const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
-
                             const mainnetSection = document.createElement('div');
                             mainnetSection.classList.add('mainnet-section');
                             mainnetSection.innerHTML = `<h4 class="mainnet-type">${actualFeeData.chainDesc}</h4>`;
-
-                            // Handle Recharge (充值)
                             const depositSection = document.createElement('div');
                             depositSection.classList.add('fee-type-section');
                             let depositLabel = "充值";
                             let depositMin = '--';
                             let depositMaxDay = '--';
-                            let depositFee = '0'; // Assuming deposit fee is always 0 if open
-
+                            let depositFee = '0';
                             if (actualFeeData.depositOpen === 1) {
                                 depositMin = formatNumber(actualFeeData.depositMin);
                                 depositMaxDay = formatNumber(actualFeeData.depositMaxDay);
-                                // depositFee remains 0
                             } else {
                                 depositLabel += ' <span class="text-gray-400 font-normal">(未开放)</span>';
                             }
@@ -735,15 +727,12 @@
                                 </div>
                             `;
                             mainnetSection.appendChild(depositSection);
-
-                            // Handle Withdraw (提现)
                             const withdrawSection = document.createElement('div');
                             withdrawSection.classList.add('fee-type-section');
                             let withdrawLabel = "提现";
                             let withdrawMin = '--';
                             let withdrawMaxDay = '--';
                             let withdrawFee = '--';
-
                             if (actualFeeData.withdrawOpen === 1) {
                                 withdrawMin = formatNumber(actualFeeData.withdrawMin);
                                 withdrawMaxDay = formatNumber(actualFeeData.withdrawMaxDay);
@@ -764,14 +753,11 @@
                                 </div>
                             `;
                             mainnetSection.appendChild(withdrawSection);
-                            
                             content.appendChild(mainnetSection);
                         });
                     }
                     accordionItem.appendChild(content);
                     DOMElements.accordionContainer.appendChild(accordionItem);
-
-                    // Add event listener to toggle accordion
                     header.addEventListener('click', () => {
                         content.classList.toggle('open');
                         header.classList.toggle('expanded');
@@ -779,35 +765,25 @@
                     });
                 });
             }
-            renderPagination(); // Keep this here, it will be hidden by showContentArea('no-data') if needed.
+            renderPagination();
         }
 
         function renderTradeFeeTable() {
-            // This function is specifically for rendering trade fee data
-            DOMElements.tradeFeeDisplayContainer.innerHTML = ''; // Clear previous data
-
+            DOMElements.tradeFeeDisplayContainer.innerHTML = '';
             const startIndex = (currentPage - 1) * displayPageSize;
             const endIndex = startIndex + displayPageSize;
             const paginatedData = filteredAndSearchedTradeData.slice(startIndex, endIndex);
 
-            console.log("[renderTradeFeeTable] 渲染交易表格。数据长度:", paginatedData.length);
-            console.log("[renderTradeFeeTable] 分页后的交易数据 (paginatedData):", paginatedData);
-
             if (paginatedData.length === 0) {
-                console.log("[renderTradeFeeTable] paginatedData 为空，显示 '暂无数据'");
-                showContentArea('no-data'); // Show no search results message
+                showContentArea('no-data');
             } else {
-                console.log("[renderTradeFeeTable] paginatedData 有数据，显示 'trade-data'");
-                showContentArea('trade-data'); // Show trade data
+                showContentArea('trade-data');
                 paginatedData.forEach(item => {
                     const tradeItemDiv = document.createElement('div');
                     tradeItemDiv.classList.add('trade-fee-item');
-
                     let feeRowsHtml = '';
                     let displaySymbol = '';
-
                     if (currentTradeType === 'contract') {
-                        // For contract trading, display 4 types of fees and use item.symbol
                         displaySymbol = item.symbol || '未知币种';
                         feeRowsHtml = `
                             <div class="fee-row">
@@ -828,7 +804,6 @@
                             </div>
                         `;
                     } else {
-                        // For spot trading, display 2 types of fees and use item.name
                         displaySymbol = item.name || '未知币种';
                         feeRowsHtml = `
                             <div class="fee-row">
@@ -841,15 +816,12 @@
                             </div>
                         `;
                     }
-
                     tradeItemDiv.innerHTML = `
                         <div class="symbol">${displaySymbol}</div>
                         ${feeRowsHtml}
                     `;
                     DOMElements.tradeFeeDisplayContainer.appendChild(tradeItemDiv);
-                    console.log("[renderTradeFeeTable] 已将交易项添加到容器:", tradeItemDiv);
                 });
-                console.log("[renderTradeFeeTable] tradeFeeDisplayContainer 当前子元素数量:", DOMElements.tradeFeeDisplayContainer.children.length);
             }
             renderPagination();
         }
@@ -863,191 +835,186 @@
         }
 
         function filterRechargeWithdrawTable(query) {
-            // This function is specifically for filtering recharge/withdraw data
             const lowerCaseQuery = query.toLowerCase().trim();
             let tempFilteredData = [];
-
-            console.log(`[filterRechargeWithdrawTable] 原始 allRechargeWithdrawData 长度: ${allRechargeWithdrawData.length}`);
-            console.log(`[filterRechargeWithdrawTable] 当前搜索查询: "${query}"`);
-
-
             if (lowerCaseQuery === '') {
-                tempFilteredData = allRechargeWithdrawData; // If query is empty, show all data
+                tempFilteredData = allRechargeWithdrawData;
             } else {
                 allRechargeWithdrawData.forEach(coinGroup => {
-                    const coinSymbol = Object.keys(coinGroup)[0]; // Get the coin symbol (e.g., "BTC", "ETH")
-                    const feeListForCoin = coinGroup[coinSymbol]; // Get the fee list for the current coin
-
-                    // Check if coin symbol or any chain description matches the query
+                    const coinSymbol = Object.keys(coinGroup)[0];
+                    const feeListForCoin = coinGroup[coinSymbol];
                     const matchesCoinSymbol = coinSymbol.toLowerCase().includes(lowerCaseQuery);
                     const matchesChainDesc = feeListForCoin.some(chainFeeItem => {
                         const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
                         return actualFeeData.chainDesc.toLowerCase().includes(lowerCaseQuery);
                     });
-
-                    // Also check against the mapped display name for search
                     let displayCoinSymbolForSearch = coinSymbol;
                     if (coinSymbol === "BSC") {
                         displayCoinSymbolForSearch = "BNB";
                     }
                     const matchesMappedSymbol = displayCoinSymbolForSearch.toLowerCase().includes(lowerCaseQuery);
-
-
                     if (matchesCoinSymbol || matchesChainDesc || matchesMappedSymbol) {
-                        tempFilteredData.push(coinGroup); // Add the entire coin group if its symbol or chainDesc matches
+                        tempFilteredData.push(coinGroup);
                     }
                 });
             }
-            filteredAndSearchedRechargeWithdrawData = tempFilteredData; // Update the global filtered data
-            console.log(`[filterRechargeWithdrawTable] 过滤后的数据长度: ${filteredAndSearchedRechargeWithdrawData.length}`);
-            console.log(`[filterTradeTable] 过滤后的数据:`, filteredAndSearchedRechargeWithdrawData);
-            currentPage = 1; // Reset to the first page after filtering
-            renderRechargeWithdrawTable(); // Render the first page of filtered data
+            filteredAndSearchedRechargeWithdrawData = tempFilteredData;
+            currentPage = 1;
+            renderRechargeWithdrawTable();
         }
 
         function filterTradeTable(query) {
-            // This function is specifically for filtering trade data
             const lowerCaseQuery = query.toLowerCase().trim();
             let tempFilteredData = [];
-
-            console.log("[filterTradeTable] 原始 allTradeFeeData:", allTradeFeeData); // Debugging line: Log original data
-            console.log("[filterTradeTable] 当前搜索查询 (query):", query); // Debugging line
-
             if (lowerCaseQuery === '') {
-                tempFilteredData = allTradeFeeData; // If query is empty, show all data
+                tempFilteredData = allTradeFeeData;
             } else {
-                // Filter logic based on currentTradeType
                 if (currentTradeType === 'contract') {
                     tempFilteredData = allTradeFeeData.filter(item =>
                         item.symbol && item.symbol.toLowerCase().includes(lowerCaseQuery)
                     );
-                } else { // spot
+                } else {
                     tempFilteredData = allTradeFeeData.filter(item =>
                         item.name && item.name.toLowerCase().includes(lowerCaseQuery)
                     );
                 }
             }
-            filteredAndSearchedTradeData = tempFilteredData; // Update the global filtered data
-            currentPage = 1; // Reset to the first page after filtering
-            console.log("[filterTradeTable] 过滤后的交易数据 (filteredAndSearchedTradeData):", filteredAndSearchedTradeData); // Debugging line: Log data after filtering
-            console.log("[filterTradeTable] 过滤后的交易数据长度 (filteredAndSearchedTradeData.length):", filteredAndSearchedTradeData.length); // NEW DEBUGGING LINE
-            renderTradeFeeTable(); // Render the first page of filtered data
+            filteredAndSearchedTradeData = tempFilteredData;
+            currentPage = 1;
+            renderTradeFeeTable();
         }
 
-
         async function fetchFeeData() {
-            showContentArea('loading'); // Show loading spinner
-
+            showContentArea('loading');
             const postData = {
                 authLevel: currentAuthLevel,
-                pageNumber: 1, // Always fetch all data for client-side pagination
-                pageSize: 10000 // Increased pageSize to fetch more data
+                pageNumber: 1,
+                pageSize: 10000
             };
-
             try {
                 const response = await fetch(RECHARGE_WITHDRAW_API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(postData)
                 });
-
                 const data = await response.json();
-                console.log("[fetchFeeData] 充值/提现 API 响应:", data); // Debugging line
-
-                // Check for API success code (which is "0" as a string) and data presence
                 if (data && data.code === "0" && data.data && data.data.feeDataList) {
-                    allRechargeWithdrawData = data.data.feeDataList; // Store the original fetched data
-                    console.log(`[fetchFeeData] 充值/提现数据获取成功。总条数: ${allRechargeWithdrawData.length}`);
-                    filterRechargeWithdrawTable(DOMElements.searchInputRechargeWithdraw.value); // Filter and render initial data with any existing search query
+                    allRechargeWithdrawData = data.data.feeDataList;
+                    filterRechargeWithdrawTable(DOMElements.searchInputRechargeWithdraw.value);
                 } else {
-                    // If API returns error or no data, show no results message
-                    console.log("[fetchFeeData] 充值/提现 API 返回无数据或错误:", data);
-                    allRechargeWithdrawData = []; // Ensure it's empty if no data
+                    allRechargeWithdrawData = [];
                     showContentArea('no-data');
                 }
             } catch (error) {
-                console.error("[fetchFeeData] 获取充值/提现数据时出错:", error);
-                // If fetch fails, show no results message
-                allRechargeWithdrawData = []; // Ensure it's empty on error
+                console.error("获取充值/提现数据时出错:", error);
+                allRechargeWithdrawData = [];
                 showContentArea('no-data');
             }
         }
 
         async function fetchTradeFeeData(quote) {
-            showContentArea('loading'); // Show loading spinner for trade data
-
+            showContentArea('loading');
             let apiUrl = '';
             let postData = {};
-
             if (currentTradeType === 'contract') {
                 apiUrl = CONTRACT_TRADE_API_URL;
-                postData = {
-                    pageNumber: 1,
-                    pageSize: 10000 // Fetch a large number to enable client-side filtering/pagination
-                };
-                // Ensure tradeCoinSelect is disabled and set to USDT for contract
-                DOMElements.tradeCoinSelect.value = 'USDT';
-                DOMElements.tradeCoinSelect.disabled = true;
-                console.log("[fetchTradeFeeData] 当前为合约交易，使用 API:", apiUrl, "请求参数:", postData);
-            } else { // spot
+                postData = { pageNumber: 1, pageSize: 10000 };
+                DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
+            } else {
                 apiUrl = TRADE_API_URL;
-                postData = {
-                    quote: quote,
-                    pageNumber: 1,
-                    pageSize: 10000
-                };
-                // Ensure tradeCoinSelect is enabled for spot
-                DOMElements.tradeCoinSelect.disabled = false;
-                console.log("[fetchTradeFeeData] 当前为现货交易，使用 API:", apiUrl, "请求参数:", postData);
+                postData = { quote: quote, pageNumber: 1, pageSize: 10000 };
+                 DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
             }
-
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(postData)
                 });
-
                 const data = await response.json();
-                console.log(`[fetchTradeFeeData] ${currentTradeType} API 响应:`, data);
-
-                // Assuming the API returns data.data.feeList, similar to spot.
                 if (data && data.code === "0" && data.data && data.data.feeList && data.data.feeList.length > 0) {
-                    console.log(`[fetchTradeFeeData] 进入 IF 块：${currentTradeType} API 响应成功且包含数据。`);
                     allTradeFeeData = data.data.feeList;
-                    console.log(`[fetchTradeFeeData] API 获取到的所有 ${currentTradeType} 交易数据 (allTradeFeeData):`, allTradeFeeData);
-                    console.log(`[fetchTradeFeeData] allTradeFeeData length after fetch:`, allTradeFeeData.length);
-                    console.log("[fetchTradeFeeData] 调用 filterTradeTable，当前搜索框内容:", DOMElements.searchInputTrade.value);
                     filterTradeTable(DOMElements.searchInputTrade.value);
                 } else {
-                    console.log(`[fetchTradeFeeData] 进入 ELSE 块：${currentTradeType} API 响应不符合预期或无数据。`);
-                    if (data && data.code === "0" && data.data && data.data.feeList && data.data.feeList.length === 0) {
-                        console.log(`[fetchTradeFeeData] ${currentTradeType} API 响应成功，但 feeList 为空。`);
-                    } else {
-                        console.log(`[fetchTradeFeeData] ${currentTradeType} API 返回错误或数据结构不符合预期:`, data);
-                    }
                     allTradeFeeData = [];
-                    filterTradeTable(''); // Call filter to ensure 'no-data' is shown
+                    filterTradeTable('');
                 }
             } catch (error) {
-                console.error(`[fetchTradeFeeData] 获取 ${currentTradeType} 数据时出错:`, error);
+                console.error(`获取 ${currentTradeType} 数据时出错:`, error);
                 allTradeFeeData = [];
                 filterTradeTable('');
             }
         }
+        
+        // --- Custom Select Logic ---
+        function setupCustomSelect() {
+            const container = DOMElements.customTradeCoinSelectContainer;
+            const selectBox = container.querySelector('.custom-select-box');
+            const optionsContainer = DOMElements.customOptions;
+            const valueDisplay = DOMElements.customSelectValue;
+            const nativeSelect = DOMElements.tradeCoinSelect;
+
+            // Populate custom options from native select
+            optionsContainer.innerHTML = '';
+            nativeSelect.querySelectorAll('option').forEach(optionEl => {
+                const optionDiv = document.createElement('div');
+                optionDiv.classList.add('custom-option');
+                optionDiv.textContent = optionEl.textContent;
+                optionDiv.dataset.value = optionEl.value;
+                if (optionEl.selected) {
+                    optionDiv.classList.add('selected');
+                }
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            // Toggle dropdown
+            selectBox.addEventListener('click', (e) => {
+                if (container.classList.contains('disabled')) return;
+                e.stopPropagation();
+                optionsContainer.classList.toggle('open');
+                selectBox.classList.toggle('open');
+            });
+
+            // Handle option selection
+            optionsContainer.querySelectorAll('.custom-option').forEach(optionDiv => {
+                optionDiv.addEventListener('click', () => {
+                    if (container.classList.contains('disabled')) return;
+                    
+                    // Update UI
+                    valueDisplay.textContent = optionDiv.textContent;
+                    optionsContainer.querySelectorAll('.custom-option').forEach(el => el.classList.remove('selected'));
+                    optionDiv.classList.add('selected');
+
+                    // Update native select
+                    nativeSelect.value = optionDiv.dataset.value;
+                    
+                    // Close dropdown
+                    optionsContainer.classList.remove('open');
+                    selectBox.classList.remove('open');
+
+                    // Trigger data fetch
+                    updateDateTime();
+                    currentTradeCoin = nativeSelect.value;
+                    fetchTradeFeeData(currentTradeCoin);
+                });
+            });
+
+            // Close dropdown when clicking outside
+            window.addEventListener('click', () => {
+                if (optionsContainer.classList.contains('open')) {
+                    optionsContainer.classList.remove('open');
+                    selectBox.classList.remove('open');
+                }
+            });
+        }
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Get references to elements once the DOM is ready and store them in DOMElements object
             DOMElements = {
                 responseContainer: document.getElementById('response-container'),
                 loadingSpinner: document.getElementById('loadingSpinner'),
-                accordionContainer: document.getElementById('accordionContainer'), // Container for Recharge/Withdraw data
-                tradeFeeDisplayContainer: document.getElementById('tradeFeeDisplayContainer'), // New container for Trade data
+                accordionContainer: document.getElementById('accordionContainer'),
+                tradeFeeDisplayContainer: document.getElementById('tradeFeeDisplayContainer'),
                 currentDateTimeElement: document.getElementById('currentDateTime'), 
                 rechargeWithdrawContent: document.getElementById('rechargeWithdrawContent'),
                 tradeContent: document.getElementById('tradeContent'),
@@ -1058,114 +1025,80 @@
                 paginationControls: document.getElementById('paginationControls'),
                 prevPageButton: document.getElementById('prevPage'),
                 nextPageButton: document.getElementById('nextPage'),
-                pageNumbersContainer: document.getElementById('pageNumbers')
+                pageNumbersContainer: document.getElementById('pageNumbers'),
+                // Custom Select Elements
+                customTradeCoinSelectContainer: document.getElementById('customTradeCoinSelectContainer'),
+                customSelectValue: document.getElementById('customSelectValue'),
+                customOptions: document.getElementById('customOptions'),
+                customSelectArrow: document.getElementById('customSelectArrow'),
             };
-            console.log("[DOMContentLoaded] DOMElements 已初始化:", DOMElements); // NEW DEBUGGING LINE
 
-            // Function to update the current date and time
-            function updateDateTime() {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                DOMElements.currentDateTimeElement.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-            }
-
-            // Update date and time immediately
             updateDateTime();
+            setupCustomSelect(); // Initialize the custom dropdown
 
-            // Event listeners for primary tabs (e.g., "交易", "充值 / 提现")
             document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
                 button.addEventListener('click', (event) => {
+                    updateDateTime();
                     document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
                     event.target.classList.add('active');
-                    
-                    // Hide all content containers first
                     DOMElements.rechargeWithdrawContent.classList.add('hidden');
                     DOMElements.tradeContent.classList.add('hidden');
-                    
-                    currentActiveTab = event.target.dataset.tab; // Update active tab
-                    currentPage = 1; // Reset to first page on tab switch
-
+                    currentActiveTab = event.target.dataset.tab;
+                    currentPage = 1;
                     if (currentActiveTab === 'recharge-withdraw') {
                         DOMElements.rechargeWithdrawContent.classList.remove('hidden');
-                        DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
-                        fetchFeeData(); // Call existing function for recharge/withdraw
+                        DOMElements.searchInputRechargeWithdraw.value = '';
+                        fetchFeeData();
                     } else if (currentActiveTab === 'trade') {
                         DOMElements.tradeContent.classList.remove('hidden'); 
-                        DOMElements.searchInputTrade.value = ''; // Clear search input
-                        // When switching to '交易' tab, ensure '现货交易' is active by default
+                        DOMElements.searchInputTrade.value = '';
                         document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
-                        // Ensure contract tab is not active if it was previously
                         document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
-                        
-                        // Set initial state for trade tab
-                        currentTradeType = 'spot'; // Always default to spot when switching to trade tab
-                        DOMElements.tradeCoinSelect.disabled = false; // Enable selection
-                        DOMElements.tradeCoinSelect.value = 'USDT'; // Reset to USDT for spot
-                        
-                        currentTradeCoin = DOMElements.tradeCoinSelect.value; // Ensure the variable is updated
-                        console.log("[DOMContentLoaded] 切换到交易标签页。当前交易币种 (currentTradeCoin):", currentTradeCoin); // NEW DEBUGGING LINE
-                        fetchTradeFeeData(currentTradeCoin); // Call new function for trade
+                        currentTradeType = 'spot';
+                        DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
+                        currentTradeCoin = DOMElements.tradeCoinSelect.value;
+                        fetchTradeFeeData(currentTradeCoin);
                     }
                 });
             });
 
-            // Event listeners for auth level tabs (within recharge/withdraw content)
             document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(button => {
                 button.addEventListener('click', (event) => {
+                    updateDateTime();
                     document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
                     event.target.classList.add('active');
                     currentAuthLevel = event.target.dataset.auth;
-                    DOMElements.searchInputRechargeWithdraw.value = ''; // Clear search input
-                    currentPage = 1; // Reset to first page
+                    DOMElements.searchInputRechargeWithdraw.value = '';
+                    currentPage = 1;
                     fetchFeeData();
                 });
             });
 
-            // Event listeners for secondary trade type tabs (within trade content)
             document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(button => {
                 button.addEventListener('click', (event) => {
+                    updateDateTime();
                     document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
                     event.target.classList.add('active');
                     currentTradeType = event.target.dataset.tradeType;
-                    
                     if (currentTradeType === 'contract') {
-                        DOMElements.tradeCoinSelect.value = 'USDT'; // Set to USDT
-                        DOMElements.tradeCoinSelect.disabled = true; // Disable selection
-                    } else { // spot
-                        DOMElements.tradeCoinSelect.disabled = false; // Enable selection
+                       DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
+                    } else {
+                        DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
                     }
-
-                    console.log(`[Event Listener] 交易类型切换至: ${currentTradeType}`);
-                    // When trade type changes, re-fetch trade data with the current coin
                     fetchTradeFeeData(currentTradeCoin);
                 });
             });
 
-            // Event listener for trade coin select
-            DOMElements.tradeCoinSelect.addEventListener('change', (event) => {
-                currentTradeCoin = event.target.value;
-                console.log(`[Event Listener] 交易币种选择: ${currentTradeCoin}。正在重新获取数据。`); // NEW DEBUGGING LINE
-                fetchTradeFeeData(currentTradeCoin); // Fetch data when coin changes
-            });
-
-            // Event listener for search input in recharge/withdraw
             DOMElements.searchInputRechargeWithdraw.addEventListener('input', () => {
-                currentPage = 1; // Reset to first page on new search
+                currentPage = 1;
                 filterRechargeWithdrawTable(DOMElements.searchInputRechargeWithdraw.value);
             });
 
-            // Event listener for search input in trade
             DOMElements.searchInputTrade.addEventListener('input', () => {
-                currentPage = 1; // Reset to first page on new search
+                currentPage = 1;
                 filterTradeTable(DOMElements.searchInputTrade.value);
             });
 
-            // Pagination button event listeners
             DOMElements.prevPageButton.addEventListener('click', () => {
                 if (currentPage > 1) {
                     goToPage(currentPage - 1);
@@ -1185,19 +1118,17 @@
                 }
             });
 
-            // Initial fetch when the page loads (for trade tab by default)
-            document.querySelector('.tab-button[data-tab="trade"]').classList.add('active'); // Default to Trade tab
-            document.querySelector('.tab-button[data-tab="recharge-withdraw"]').classList.remove('active'); // Ensure Recharge/Withdraw is not active
-            DOMElements.tradeContent.classList.remove('hidden'); // Show Trade content
-            DOMElements.rechargeWithdrawContent.classList.add('hidden'); // Hide Recharge/Withdraw content
-            currentActiveTab = "trade"; // Set initial active tab to trade
+            // Initial Load
+            document.querySelector('.tab-button[data-tab="trade"]').classList.add('active');
+            document.querySelector('.tab-button[data-tab="recharge-withdraw"]').classList.remove('active');
+            DOMElements.tradeContent.classList.remove('hidden');
+            DOMElements.rechargeWithdrawContent.classList.add('hidden');
+            currentActiveTab = "trade";
             
-            // Ensure secondary tab for spot is active and fetch data for it
             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
             currentTradeType = 'spot';
-            DOMElements.tradeCoinSelect.disabled = false;
-            DOMElements.tradeCoinSelect.value = 'USDT';
+            DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
             currentTradeCoin = DOMElements.tradeCoinSelect.value;
             fetchTradeFeeData(currentTradeCoin);
         });
