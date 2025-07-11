@@ -1133,7 +1133,6 @@
             fetchTradeFeeData(currentTradeCoin);
         });
     </script>
-
 <script type="text/javascript">
   var lastSentHeight = 0;
   var resizeTimer; 
@@ -1146,8 +1145,6 @@
     }
     
     lastSentHeight = height;
-
-    console.log("✅ V8 (终极健壮版) 运行，发送新高度:", height);
     parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
   }
 
@@ -1156,15 +1153,10 @@
     resizeTimer = setTimeout(calculateAndSendHeight, 150);
   }
 
-  // --- Event Listeners ---
   window.addEventListener('load', scheduleHeightSend);
   window.addEventListener('resize', scheduleHeightSend);
 
   var observer = new MutationObserver(scheduleHeightSend);
-
-  // --- 核心改动在这里 ---
-  // 我们不再观察 body，而是观察整个文档的根节点 <html>
-  // 这样即使内部程序替换了 body，观察员也不会失效
   observer.observe(document.documentElement, {
     attributes: true,
     childList: true,
