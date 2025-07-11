@@ -1135,27 +1135,35 @@
     </script>
 
 <script type="text/javascript">
-  function sendHeight() {
-    // 日志1：检查函数是否被调用
-    console.log("子页面(GitHub): sendHeight函数被调用");
+  // 在函数外部定义一个变量，用来记录上一次发送的高度
+  var lastSentHeight = 0;
 
+  function sendHeight() {
     var body = document.body;
     var html = document.documentElement;
     var height = Math.max( body.scrollHeight, body.offsetHeight,
                            html.clientHeight, html.scrollHeight, html.offsetHeight ) + 15;
 
-    // 日志2：检查计算出的高度
-    console.log("子页面(GitHub): 计算出的高度是", height);
+    // --- 核心改动在这里 ---
+    // 检查新计算的高度和上次发送的高度差距是否小于一个很小的值（例如3px）
+    // 如果是，就认为高度没有实质变化，直接退出函数，不再发送消息
+    if (Math.abs(height - lastSentHeight) < 3) {
+      return;
+    }
+
+    // 如果高度确实变了，就更新记录，并发送新高度
+    lastSentHeight = height;
+
+    // 为了调试，我们保留日志，看它是否还会无限循环
+    console.log("子页面(GitHub): 高度发生变化，发送新高度:", height);
 
     parent.postMessage({
       frameHeight: height,
       source: 'my-zendesk-iframe'
     }, '*');
-
-    // 日志3：确认消息已发送
-    console.log("子页面(GitHub): postMessage消息已发送！");
   }
 
+  // 监听器保持不变
   window.addEventListener('load', sendHeight);
   window.addEventListener('resize', sendHeight);
   var observer = new MutationObserver(sendHeight);
