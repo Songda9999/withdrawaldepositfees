@@ -1138,14 +1138,25 @@
   var resizeTimer; 
 
   function calculateAndSendHeight() {
-    var height = document.documentElement.scrollHeight;
+    // --- 核心改动在这里 ---
+    // 我们不再测量整个文档，而是精确查找 id 为 "app" 的容器
+    var contentContainer = document.querySelector('#app');
 
-    if (Math.abs(height - lastSentHeight) < 3) {
-      return;
+    // 确保我们找到了这个容器
+    if (contentContainer) {
+      // 获取这个容器的真实内容高度
+      var height = contentContainer.scrollHeight;
+
+      // 如果高度变化不大，就直接返回，防止不必要的刷新
+      if (Math.abs(height - lastSentHeight) < 3) {
+        return;
+      }
+
+      lastSentHeight = height;
+
+      // 发送最终的、精确的高度
+      parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
     }
-    
-    lastSentHeight = height;
-    parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
   }
 
   function scheduleHeightSend() {
