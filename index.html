@@ -298,17 +298,18 @@
         .expand-icon.rotate-180 {
             transform: rotate(180deg);
         }
+        
         .coin-details-content {
             padding: 0 20px;
-            max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
             background-color: #ffffff;
+            display: none; /* Hidden by default */
         }
         .coin-details-content.open {
-            max-height: 9999px;
+            display: block; /* Shown when open class is added */
             padding: 20px;
         }
+
         .mainnet-section {
             padding: 15px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -462,7 +463,7 @@
             </div>
         </div>
 
-        <div id="response-container" class="min-h-48 flex">
+        <div id="response-container" class="flex">
             <div class="loading-spinner hidden" id="loadingSpinner"></div>
             <div id="accordionContainer" class="w-full hidden">
             </div>
@@ -486,7 +487,7 @@
     </div>
 
     <script>
-        // --- JavaScript 代码 ---
+        // --- JavaScript Code ---
         const RECHARGE_WITHDRAW_API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
         const TRADE_API_URL = 'https://getexchangefee.sokdana2233.workers.dev/';
         const CONTRACT_TRADE_API_URL = 'https://getfuturefees.sokdana2233.workers.dev/';
@@ -549,7 +550,7 @@
             DOMElements.accordionContainer.classList.add('hidden');
             DOMElements.tradeFeeDisplayContainer.classList.add('hidden');
             DOMElements.noSearchResults.classList.add('hidden');
-            DOMElements.paginationControls.classList.add('hidden');
+            DOMElements.paginationControls.classList.add('hidden'); 
             DOMElements.responseContainer.classList.remove('justify-center', 'items-center');
             DOMElements.noSearchResults.classList.remove('flex', 'items-center', 'justify-center');
 
@@ -558,10 +559,8 @@
                 DOMElements.responseContainer.classList.add('justify-center', 'items-center');
             } else if (areaId === 'recharge-withdraw-data') {
                 DOMElements.accordionContainer.classList.remove('hidden');
-                DOMElements.paginationControls.classList.remove('hidden');
             } else if (areaId === 'trade-data') {
                 DOMElements.tradeFeeDisplayContainer.classList.remove('hidden');
-                DOMElements.paginationControls.classList.remove('hidden');
             } else if (areaId === 'no-data') {
                 DOMElements.noSearchResults.classList.remove('hidden');
                 DOMElements.noSearchResults.classList.add('flex', 'items-center', 'justify-center');
@@ -598,15 +597,26 @@
             const totalPages = Math.ceil(dataToPaginate.length / displayPageSize);
             DOMElements.pageNumbersContainer.innerHTML = '';
 
-            if (totalPages <= 1) {
+            // If there are no pages at all, hide pagination and exit.
+            if (totalPages === 0) {
                 DOMElements.paginationControls.classList.add('hidden');
                 return;
-            } else {
-                DOMElements.paginationControls.classList.remove('hidden');
-            }
+            } 
+            
+            // If there is at least one page, ensure the pagination container is visible.
+            DOMElements.paginationControls.classList.remove('hidden');
 
-            DOMElements.prevPageButton.disabled = currentPage === 1;
-            DOMElements.nextPageButton.disabled = currentPage === totalPages;
+            // --- FINAL OPTIMIZATION: Conditionally display arrow buttons ---
+            if (totalPages > 1) {
+                DOMElements.prevPageButton.style.display = 'flex';
+                DOMElements.nextPageButton.style.display = 'flex';
+                DOMElements.prevPageButton.disabled = currentPage === 1;
+                DOMElements.nextPageButton.disabled = currentPage === totalPages;
+            } else {
+                DOMElements.prevPageButton.style.display = 'none';
+                DOMElements.nextPageButton.style.display = 'none';
+            }
+            // --- END OPTIMIZATION ---
 
             const maxPageButtons = 7;
             let startPage, endPage;
@@ -679,93 +689,104 @@
             } else {
                 showContentArea('recharge-withdraw-data');
                 paginatedData.forEach(coinGroup => {
-                    const coinSymbol = Object.keys(coinGroup)[0];
-                    const feeListForCoin = coinGroup[coinSymbol];
-                    const accordionItem = document.createElement('div');
-                    accordionItem.classList.add('coin-accordion-item');
-                    const header = document.createElement('div');
-                    header.classList.add('coin-header');
-                    let displayCoinSymbol = coinSymbol;
-                    if (coinSymbol === "BSC") {
-                        displayCoinSymbol = "BNB";
-                    }
-                    let imgSrc = coinIconMap[displayCoinSymbol] || "https://placehold.co/28x28/E5E7EB/E5E7EB";
-                    header.innerHTML = `
-                        <div class="flex items-center">
-                            <img src="${imgSrc}" alt="${displayCoinSymbol} icon" class="coin-icon">
-                            <span class="coin-symbol-main">${displayCoinSymbol}</span>
-                        </div>
-                        <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
-                    `;
-                    accordionItem.appendChild(header);
-                    const content = document.createElement('div');
-                    content.classList.add('coin-details-content');
-                    if (feeListForCoin && feeListForCoin.length > 0) {
-                        feeListForCoin.forEach(chainFeeItem => {
-                            const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
-                            const mainnetSection = document.createElement('div');
-                            mainnetSection.classList.add('mainnet-section');
-                            mainnetSection.innerHTML = `<h4 class="mainnet-type">${actualFeeData.chainDesc}</h4>`;
-                            const depositSection = document.createElement('div');
-                            depositSection.classList.add('fee-type-section');
-                            let depositLabel = "充值";
-                            let depositMin = '--';
-                            let depositMaxDay = '--';
-                            let depositFee = '0';
-                            if (actualFeeData.depositOpen === 1) {
-                                depositMin = formatNumber(actualFeeData.depositMin);
-                                depositMaxDay = formatNumber(actualFeeData.depositMaxDay);
-                            } else {
-                                depositLabel += ' <span class="text-gray-400 font-normal">(未开放)</span>';
-                            }
-                            depositSection.innerHTML = `
-                                <p class="fee-type-label">${depositLabel}</p>
-                                <div class="fee-details">
-                                    <p><span>最小数量:</span><span>${depositMin}</span></p>
-                                    <p><span>每日最大数量:</span><span>${depositMaxDay}</span></p>
-                                    <p><span>手续费:</span><span>${depositFee} ${coinSymbol}</span></p>
-                                </div>
-                            `;
-                            mainnetSection.appendChild(depositSection);
-                            const withdrawSection = document.createElement('div');
-                            withdrawSection.classList.add('fee-type-section');
-                            let withdrawLabel = "提现";
-                            let withdrawMin = '--';
-                            let withdrawMaxDay = '--';
-                            let withdrawFee = '--';
-                            if (actualFeeData.withdrawOpen === 1) {
-                                withdrawMin = formatNumber(actualFeeData.withdrawMin);
-                                withdrawMaxDay = formatNumber(actualFeeData.withdrawMaxDay);
-                                if (actualFeeData.defaultFee === 0) {
-                                    withdrawFee = '0';
-                                } else if (actualFeeData.defaultFee !== undefined && actualFeeData.defaultFee !== null && actualFeeData.defaultFee !== '') {
-                                    withdrawFee = formatNumber(actualFeeData.defaultFee);
+                    try { 
+                        if (typeof coinGroup !== 'object' || coinGroup === null || Object.keys(coinGroup).length === 0) {
+                            console.error("Invalid coin group object in data:", coinGroup);
+                            return; 
+                        }
+
+                        const coinSymbol = Object.keys(coinGroup)[0];
+                        const feeListForCoin = coinGroup[coinSymbol];
+                        const accordionItem = document.createElement('div');
+                        accordionItem.classList.add('coin-accordion-item');
+                        const header = document.createElement('div');
+                        header.classList.add('coin-header');
+                        let displayCoinSymbol = coinSymbol;
+                        if (coinSymbol === "BSC") {
+                            displayCoinSymbol = "BNB";
+                        }
+                        let imgSrc = coinIconMap[displayCoinSymbol] || "https://placehold.co/28x28/E5E7EB/E5E7EB";
+                        header.innerHTML = `
+                            <div class="flex items-center">
+                                <img src="${imgSrc}" alt="${displayCoinSymbol} icon" class="coin-icon" onerror="this.onerror=null;this.src='https://placehold.co/28x28/E5E7EB/E5E7EB';">
+                                <span class="coin-symbol-main">${displayCoinSymbol}</span>
+                            </div>
+                            <svg class="expand-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                        `;
+                        accordionItem.appendChild(header);
+                        const content = document.createElement('div');
+                        content.classList.add('coin-details-content');
+                        if (Array.isArray(feeListForCoin) && feeListForCoin.length > 0) {
+                            feeListForCoin.forEach(chainFeeItem => {
+                                const actualFeeData = chainFeeItem[Object.keys(chainFeeItem)[0]];
+                                const mainnetSection = document.createElement('div');
+                                mainnetSection.classList.add('mainnet-section');
+                                mainnetSection.innerHTML = `<h4 class="mainnet-type">${actualFeeData.chainDesc}</h4>`;
+                                const depositSection = document.createElement('div');
+                                depositSection.classList.add('fee-type-section');
+                                let depositLabel = "充值";
+                                let depositMin = '--';
+                                let depositMaxDay = '--';
+                                let depositFee = '0';
+                                if (actualFeeData.depositOpen === 1) {
+                                    depositMin = formatNumber(actualFeeData.depositMin);
+                                    depositMaxDay = formatNumber(actualFeeData.depositMaxDay);
+                                } else {
+                                    depositLabel += ' <span class="text-gray-400 font-normal">(未开放)</span>';
                                 }
-                            } else {
-                                withdrawLabel += ' <span class="text-gray-400 font-normal">(未开放)</span>';
-                            }
-                            withdrawSection.innerHTML = `
-                                <p class="fee-type-label">${withdrawLabel}</p>
-                                <div class="fee-details">
-                                    <p><span>最小数量:</span><span>${withdrawMin}</span></p>
-                                    <p><span>每日最大数量:</span><span>${withdrawMaxDay}</span></p>
-                                    <p><span>手续费:</span><span>${withdrawFee} ${coinSymbol}</span></p>
-                                </div>
-                            `;
-                            mainnetSection.appendChild(withdrawSection);
-                            content.appendChild(mainnetSection);
+                                depositSection.innerHTML = `
+                                    <p class="fee-type-label">${depositLabel}</p>
+                                    <div class="fee-details">
+                                        <p><span>最小数量:</span><span>${depositMin}</span></p>
+                                        <p><span>每日最大数量:</span><span>${depositMaxDay}</span></p>
+                                        <p><span>手续费:</span><span>${depositFee} ${coinSymbol}</span></p>
+                                    </div>
+                                `;
+                                mainnetSection.appendChild(depositSection);
+                                const withdrawSection = document.createElement('div');
+                                withdrawSection.classList.add('fee-type-section');
+                                let withdrawLabel = "提现";
+                                let withdrawMin = '--';
+                                let withdrawMaxDay = '--';
+                                let withdrawFee = '--';
+                                if (actualFeeData.withdrawOpen === 1) {
+                                    withdrawMin = formatNumber(actualFeeData.withdrawMin);
+                                    withdrawMaxDay = formatNumber(actualFeeData.withdrawMaxDay);
+                                    if (actualFeeData.defaultFee === 0) {
+                                        withdrawFee = '0';
+                                    } else if (actualFeeData.defaultFee !== undefined && actualFeeData.defaultFee !== null && actualFeeData.defaultFee !== '') {
+                                        withdrawFee = formatNumber(actualFeeData.defaultFee);
+                                    }
+                                } else {
+                                    withdrawLabel += ' <span class="text-gray-400 font-normal">(未开放)</span>';
+                                }
+                                withdrawSection.innerHTML = `
+                                    <p class="fee-type-label">${withdrawLabel}</p>
+                                    <div class="fee-details">
+                                        <p><span>最小数量:</span><span>${withdrawMin}</span></p>
+                                        <p><span>每日最大数量:</span><span>${withdrawMaxDay}</span></p>
+                                        <p><span>手续费:</span><span>${withdrawFee} ${coinSymbol}</span></p>
+                                    </div>
+                                `;
+                                mainnetSection.appendChild(withdrawSection);
+                                content.appendChild(mainnetSection);
+                            });
+                        }
+                        accordionItem.appendChild(content);
+                        DOMElements.accordionContainer.appendChild(accordionItem);
+                        header.addEventListener('click', () => {
+                            content.classList.toggle('open');
+                            header.classList.toggle('expanded');
+                            header.querySelector('.expand-icon').classList.toggle('rotate-180');
+                            scheduleHeightSend();
                         });
+                    } catch (e) {
+                        console.error("Error rendering a single coin group item:", coinGroup, e);
                     }
-                    accordionItem.appendChild(content);
-                    DOMElements.accordionContainer.appendChild(accordionItem);
-                    header.addEventListener('click', () => {
-                        content.classList.toggle('open');
-                        header.classList.toggle('expanded');
-                        header.querySelector('.expand-icon').classList.toggle('rotate-180');
-                    });
                 });
             }
             renderPagination();
+            scheduleHeightSend();
         }
 
         function renderTradeFeeTable() {
@@ -824,6 +845,7 @@
                 });
             }
             renderPagination();
+            scheduleHeightSend();
         }
 
         function renderCurrentTabContent() {
@@ -898,10 +920,11 @@
                     body: JSON.stringify(postData)
                 });
                 const data = await response.json();
-                if (data && data.code === "0" && data.data && data.data.feeDataList) {
+                if (data && data.code === "0" && data.data && Array.isArray(data.data.feeDataList)) {
                     allRechargeWithdrawData = data.data.feeDataList;
                     filterRechargeWithdrawTable(DOMElements.searchInputRechargeWithdraw.value);
                 } else {
+                    console.error("API returned invalid data structure:", data);
                     allRechargeWithdrawData = [];
                     showContentArea('no-data');
                 }
@@ -932,7 +955,7 @@
                     body: JSON.stringify(postData)
                 });
                 const data = await response.json();
-                if (data && data.code === "0" && data.data && data.data.feeList && data.data.feeList.length > 0) {
+                if (data && data.code === "0" && data.data && data.data.feeList && Array.isArray(data.data.feeList)) {
                     allTradeFeeData = data.data.feeList;
                     filterTradeTable(DOMElements.searchInputTrade.value);
                 } else {
@@ -946,7 +969,6 @@
             }
         }
         
-        // --- Custom Select Logic ---
         function setupCustomSelect() {
             const container = DOMElements.customTradeCoinSelectContainer;
             const selectBox = container.querySelector('.custom-select-box');
@@ -954,7 +976,6 @@
             const valueDisplay = DOMElements.customSelectValue;
             const nativeSelect = DOMElements.tradeCoinSelect;
 
-            // Populate custom options from native select
             optionsContainer.innerHTML = '';
             nativeSelect.querySelectorAll('option').forEach(optionEl => {
                 const optionDiv = document.createElement('div');
@@ -967,7 +988,6 @@
                 optionsContainer.appendChild(optionDiv);
             });
 
-            // Toggle dropdown
             selectBox.addEventListener('click', (e) => {
                 if (container.classList.contains('disabled')) return;
                 e.stopPropagation();
@@ -975,31 +995,25 @@
                 selectBox.classList.toggle('open');
             });
 
-            // Handle option selection
             optionsContainer.querySelectorAll('.custom-option').forEach(optionDiv => {
                 optionDiv.addEventListener('click', () => {
                     if (container.classList.contains('disabled')) return;
                     
-                    // Update UI
                     valueDisplay.textContent = optionDiv.textContent;
                     optionsContainer.querySelectorAll('.custom-option').forEach(el => el.classList.remove('selected'));
                     optionDiv.classList.add('selected');
 
-                    // Update native select
                     nativeSelect.value = optionDiv.dataset.value;
                     
-                    // Close dropdown
                     optionsContainer.classList.remove('open');
                     selectBox.classList.remove('open');
 
-                    // Trigger data fetch
                     updateDateTime();
                     currentTradeCoin = nativeSelect.value;
                     fetchTradeFeeData(currentTradeCoin);
                 });
             });
 
-            // Close dropdown when clicking outside
             window.addEventListener('click', () => {
                 if (optionsContainer.classList.contains('open')) {
                     optionsContainer.classList.remove('open');
@@ -1026,7 +1040,6 @@
                 prevPageButton: document.getElementById('prevPage'),
                 nextPageButton: document.getElementById('nextPage'),
                 pageNumbersContainer: document.getElementById('pageNumbers'),
-                // Custom Select Elements
                 customTradeCoinSelectContainer: document.getElementById('customTradeCoinSelectContainer'),
                 customSelectValue: document.getElementById('customSelectValue'),
                 customOptions: document.getElementById('customOptions'),
@@ -1034,58 +1047,70 @@
             };
 
             updateDateTime();
-            setupCustomSelect(); // Initialize the custom dropdown
+            setupCustomSelect();
 
             document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
                 button.addEventListener('click', (event) => {
-                    updateDateTime();
-                    document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
-                    event.target.classList.add('active');
-                    DOMElements.rechargeWithdrawContent.classList.add('hidden');
-                    DOMElements.tradeContent.classList.add('hidden');
-                    currentActiveTab = event.target.dataset.tab;
-                    currentPage = 1;
-                    if (currentActiveTab === 'recharge-withdraw') {
-                        DOMElements.rechargeWithdrawContent.classList.remove('hidden');
-                        DOMElements.searchInputRechargeWithdraw.value = '';
-                        fetchFeeData();
-                    } else if (currentActiveTab === 'trade') {
-                        DOMElements.tradeContent.classList.remove('hidden'); 
-                        DOMElements.searchInputTrade.value = '';
-                        document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
-                        document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
-                        currentTradeType = 'spot';
-                        DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
-                        currentTradeCoin = DOMElements.tradeCoinSelect.value;
-                        fetchTradeFeeData(currentTradeCoin);
+                    try {
+                        updateDateTime();
+                        document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
+                        event.target.classList.add('active');
+                        DOMElements.rechargeWithdrawContent.classList.add('hidden');
+                        DOMElements.tradeContent.classList.add('hidden');
+                        currentActiveTab = event.target.dataset.tab;
+                        currentPage = 1;
+                        if (currentActiveTab === 'recharge-withdraw') {
+                            DOMElements.rechargeWithdrawContent.classList.remove('hidden');
+                            DOMElements.searchInputRechargeWithdraw.value = '';
+                            fetchFeeData();
+                        } else if (currentActiveTab === 'trade') {
+                            DOMElements.tradeContent.classList.remove('hidden'); 
+                            DOMElements.searchInputTrade.value = '';
+                            document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
+                            document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
+                            currentTradeType = 'spot';
+                            DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
+                            currentTradeCoin = DOMElements.tradeCoinSelect.value;
+                            fetchTradeFeeData(currentTradeCoin);
+                        }
+                    } catch (e) {
+                        console.error("Error in tab click handler:", e);
                     }
                 });
             });
 
             document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(button => {
                 button.addEventListener('click', (event) => {
-                    updateDateTime();
-                    document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
-                    event.target.classList.add('active');
-                    currentAuthLevel = event.target.dataset.auth;
-                    DOMElements.searchInputRechargeWithdraw.value = '';
-                    currentPage = 1;
-                    fetchFeeData();
+                    try {
+                        updateDateTime();
+                        document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
+                        event.target.classList.add('active');
+                        currentAuthLevel = event.target.dataset.auth;
+                        DOMElements.searchInputRechargeWithdraw.value = '';
+                        currentPage = 1;
+                        fetchFeeData();
+                    } catch (e) {
+                        console.error("Error in auth tab click handler:", e);
+                    }
                 });
             });
 
             document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(button => {
                 button.addEventListener('click', (event) => {
-                    updateDateTime();
-                    document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
-                    event.target.classList.add('active');
-                    currentTradeType = event.target.dataset.tradeType;
-                    if (currentTradeType === 'contract') {
-                       DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
-                    } else {
-                        DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
+                    try {
+                        updateDateTime();
+                        document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
+                        event.target.classList.add('active');
+                        currentTradeType = event.target.dataset.tradeType;
+                        if (currentTradeType === 'contract') {
+                           DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
+                        } else {
+                            DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
+                        }
+                        fetchTradeFeeData(currentTradeCoin);
+                    } catch(e) {
+                        console.error("Error in trade type click handler:", e);
                     }
-                    fetchTradeFeeData(currentTradeCoin);
                 });
             });
 
@@ -1138,25 +1163,14 @@
   var resizeTimer; 
 
   function calculateAndSendHeight() {
-    // --- 核心改动在这里 ---
-    // 我们不再测量整个文档，而是精确查找 id 为 "app" 的容器
-    var contentContainer = document.querySelector('#app');
+    var height = document.documentElement.scrollHeight + 5;
 
-    // 确保我们找到了这个容器
-    if (contentContainer) {
-      // 获取这个容器的真实内容高度
-      var height = contentContainer.scrollHeight;
-
-      // 如果高度变化不大，就直接返回，防止不必要的刷新
-      if (Math.abs(height - lastSentHeight) < 3) {
-        return;
-      }
-
-      lastSentHeight = height;
-
-      // 发送最终的、精确的高度
-      parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
+    if (Math.abs(height - lastSentHeight) < 3) {
+      return;
     }
+    
+    lastSentHeight = height;
+    parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
   }
 
   function scheduleHeightSend() {
