@@ -485,29 +485,11 @@
         </div>
     </div>
 
+    <!-- The only script needed for iframe communication -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js" xintegrity="sha512-14c1x2R2iIyVb2/frL2xGyIeSjA2kR0P4smb5tLzJv2S/NJY3vC4Nak2B2dL/hLgGjNIZaTfPhL2VKiQA/8j/A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <script>
       (function() {
-        // --- Iframe communication logic ---
-        var lastSentHeight = 0;
-        var resizeTimer; 
-
-        function calculateAndSendHeight() {
-          var height = document.documentElement.scrollHeight + 5;
-          if (height === lastSentHeight) {
-            return;
-          }
-          lastSentHeight = height;
-          parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
-        }
-
-        function scheduleHeightSend() {
-          clearTimeout(resizeTimer);
-          resizeTimer = setTimeout(calculateAndSendHeight, 200);
-        }
-
-        window.addEventListener('load', scheduleHeightSend);
-        window.addEventListener('resize', scheduleHeightSend);
-
         // --- Main application logic ---
         const RECHARGE_WITHDRAW_API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
         const TRADE_API_URL = 'https://getexchangefee.sokdana2233.workers.dev/';
@@ -776,7 +758,6 @@
                             content.classList.toggle('open');
                             header.classList.toggle('expanded');
                             header.querySelector('.expand-icon').classList.toggle('rotate-180');
-                            scheduleHeightSend();
                         });
                     } catch (e) {
                         console.error("Error rendering a single coin group item:", coinGroup, e);
@@ -784,7 +765,6 @@
                 });
             }
             renderPagination();
-            scheduleHeightSend();
         }
 
         function renderTradeFeeTable() {
@@ -843,7 +823,6 @@
                 });
             }
             renderPagination();
-            scheduleHeightSend();
         }
 
         function renderCurrentTabContent() {
