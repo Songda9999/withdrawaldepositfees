@@ -1320,23 +1320,16 @@
       })();
     </script>
 <script>
-function sendIframeHeight() {
-  const height = document.documentElement.scrollHeight || document.body.scrollHeight;
-  window.parent.postMessage({ type: 'resize-iframe', height: height }, '*');
-}
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+  }
 
-function scrollToTop() {
-  window.scrollTo(0, 0);  // 滚动到 iframe 内容的顶部
-}
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
 
-// 初始加载时发送高度
-window.onload = sendIframeHeight;
-
-// 内容变动时重新计算并发送高度
-window.addEventListener('resize', sendIframeHeight);
-
-// 向父页面发送滚动到顶部的请求
-window.parent.postMessage({ type: 'scroll-top' }, '*');
+  // 若页面内容有分页按钮/切换 tab，调用 sendHeight()
+  setInterval(sendHeight, 1000); // 防止动态变化高度不及时
 </script>
 </body>
 </html>
