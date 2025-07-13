@@ -1318,17 +1318,32 @@
         });
       })();
     </script>
-        <script>
+<script>
   function sendHeight() {
     const height = document.body.scrollHeight;
     parent.postMessage({ type: 'resize-iframe', height: height }, '*');
   }
 
-  window.addEventListener('load', sendHeight);
+  function sendScrollToTop() {
+    parent.postMessage({ type: 'scroll-top' }, '*');
+  }
+
+  window.addEventListener('load', () => {
+    sendHeight();
+    sendScrollToTop();
+  });
   window.addEventListener('resize', sendHeight);
 
-  // 若页面内容有分页按钮/切换 tab，调用 sendHeight()
-  setInterval(sendHeight, 1000); // 防止动态变化高度不及时
+  // 补丁：页面动态变化内容时也同步高度
+  setInterval(sendHeight, 1000);
+
+  // 在分页、tab 切换、筛选等位置补发 scroll 指令（已有 scrollToTop 可用）
+  function scrollToTop() {
+    if (window.parentIFrame) {
+      window.parentIFrame.scrollTo(0, 0);
+    }
+    sendScrollToTop(); // 主动通知外层父页面（Zendesk）
+  }
 </script>
 </body>
 </html>
