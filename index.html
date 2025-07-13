@@ -406,8 +406,7 @@
 </head>
 <body class="antialiased">
     <div class="container">
-        <p class="text-sm text-gray-500 mb-6" id="currentDateTime">更新时间：加载中...</p>
-
+        
         <div class="mb-6">
             <!-- Primary Tabs -->
             <div class="flex tab-group mb-4">
@@ -436,7 +435,7 @@
                         <button class="secondary-tab-button" data-trade-type="contract">合约交易</button>
                     </div>
                     <div class="flex items-center">
-                        <div class="relative mr-4">
+                        <div id="tradeCoinSelectWrapper" class="relative mr-4">
                             <!-- Visually hidden native select -->
                             <select id="tradeCoinSelect" class="hidden">
                                 <option value="USDT">USDT</option>
@@ -487,7 +486,36 @@
     </div>
 
     <script>
-        // --- JavaScript Code ---
+      (function() {
+        // --- Iframe communication logic ---
+        var lastSentHeight = 0;
+        var resizeTimer; 
+
+        function calculateAndSendHeight() {
+          var height = document.documentElement.scrollHeight + 5;
+          if (height === lastSentHeight) {
+            return;
+          }
+          lastSentHeight = height;
+          parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
+        }
+
+        function scheduleHeightSend() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(calculateAndSendHeight, 200);
+        }
+
+        window.addEventListener('load', scheduleHeightSend);
+        window.addEventListener('resize', scheduleHeightSend);
+
+        var observer = new MutationObserver(scheduleHeightSend);
+        observer.observe(document.body, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+        });
+
+        // --- Main application logic ---
         const RECHARGE_WITHDRAW_API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
         const TRADE_API_URL = 'https://getexchangefee.sokdana2233.workers.dev/';
         const CONTRACT_TRADE_API_URL = 'https://getfuturefees.sokdana2233.workers.dev/';
@@ -568,19 +596,7 @@
             }
         }
         
-        function updateDateTime() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            DOMElements.currentDateTimeElement.textContent = `更新时间： ${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-        }
-
         function goToPage(page) {
-            updateDateTime(); 
             currentPage = page;
             renderCurrentTabContent();
             renderPagination();
@@ -597,26 +613,15 @@
             const totalPages = Math.ceil(dataToPaginate.length / displayPageSize);
             DOMElements.pageNumbersContainer.innerHTML = '';
 
-            // If there are no pages at all, hide pagination and exit.
             if (totalPages === 0) {
                 DOMElements.paginationControls.classList.add('hidden');
                 return;
             } 
             
-            // If there is at least one page, ensure the pagination container is visible.
             DOMElements.paginationControls.classList.remove('hidden');
 
-            // --- FINAL OPTIMIZATION: Conditionally display arrow buttons ---
-            if (totalPages > 1) {
-                DOMElements.prevPageButton.style.display = 'flex';
-                DOMElements.nextPageButton.style.display = 'flex';
-                DOMElements.prevPageButton.disabled = currentPage === 1;
-                DOMElements.nextPageButton.disabled = currentPage === totalPages;
-            } else {
-                DOMElements.prevPageButton.style.display = 'none';
-                DOMElements.nextPageButton.style.display = 'none';
-            }
-            // --- END OPTIMIZATION ---
+            DOMElements.prevPageButton.disabled = currentPage === 1;
+            DOMElements.nextPageButton.disabled = currentPage === totalPages;
 
             const maxPageButtons = 7;
             let startPage, endPage;
@@ -939,15 +944,15 @@
             showContentArea('loading');
             let apiUrl = '';
             let postData = {};
+
             if (currentTradeType === 'contract') {
                 apiUrl = CONTRACT_TRADE_API_URL;
                 postData = { pageNumber: 1, pageSize: 10000 };
-                DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
             } else {
                 apiUrl = TRADE_API_URL;
                 postData = { quote: quote, pageNumber: 1, pageSize: 10000 };
-                 DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
             }
+
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -1004,12 +1009,11 @@
                     optionDiv.classList.add('selected');
 
                     nativeSelect.value = optionDiv.dataset.value;
+                    currentTradeCoin = nativeSelect.value;
                     
                     optionsContainer.classList.remove('open');
                     selectBox.classList.remove('open');
 
-                    updateDateTime();
-                    currentTradeCoin = nativeSelect.value;
                     fetchTradeFeeData(currentTradeCoin);
                 });
             });
@@ -1021,6 +1025,16 @@
                 }
             });
         }
+        
+        function updateTradeUI(tradeType) {
+            if (tradeType === 'contract') {
+                DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
+                DOMElements.customSelectValue.textContent = 'USDT';
+            } else {
+                DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
+                DOMElements.customSelectValue.textContent = currentTradeCoin;
+            }
+        }
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1029,12 +1043,12 @@
                 loadingSpinner: document.getElementById('loadingSpinner'),
                 accordionContainer: document.getElementById('accordionContainer'),
                 tradeFeeDisplayContainer: document.getElementById('tradeFeeDisplayContainer'),
-                currentDateTimeElement: document.getElementById('currentDateTime'), 
                 rechargeWithdrawContent: document.getElementById('rechargeWithdrawContent'),
                 tradeContent: document.getElementById('tradeContent'),
                 searchInputRechargeWithdraw: document.getElementById('searchInputRechargeWithdraw'),
                 searchInputTrade: document.getElementById('searchInputTrade'),
                 tradeCoinSelect: document.getElementById('tradeCoinSelect'),
+                tradeCoinSelectWrapper: document.getElementById('tradeCoinSelectWrapper'),
                 noSearchResults: document.getElementById('noSearchResults'),
                 paginationControls: document.getElementById('paginationControls'),
                 prevPageButton: document.getElementById('prevPage'),
@@ -1046,13 +1060,11 @@
                 customSelectArrow: document.getElementById('customSelectArrow'),
             };
 
-            updateDateTime();
             setupCustomSelect();
 
             document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
                 button.addEventListener('click', (event) => {
                     try {
-                        updateDateTime();
                         document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
                         event.target.classList.add('active');
                         DOMElements.rechargeWithdrawContent.classList.add('hidden');
@@ -1069,8 +1081,7 @@
                             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
                             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
                             currentTradeType = 'spot';
-                            DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
-                            currentTradeCoin = DOMElements.tradeCoinSelect.value;
+                            updateTradeUI(currentTradeType);
                             fetchTradeFeeData(currentTradeCoin);
                         }
                     } catch (e) {
@@ -1082,7 +1093,6 @@
             document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(button => {
                 button.addEventListener('click', (event) => {
                     try {
-                        updateDateTime();
                         document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
                         event.target.classList.add('active');
                         currentAuthLevel = event.target.dataset.auth;
@@ -1098,15 +1108,12 @@
             document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(button => {
                 button.addEventListener('click', (event) => {
                     try {
-                        updateDateTime();
                         document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
                         event.target.classList.add('active');
                         currentTradeType = event.target.dataset.tradeType;
-                        if (currentTradeType === 'contract') {
-                           DOMElements.customTradeCoinSelectContainer.classList.add('disabled');
-                        } else {
-                            DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
-                        }
+                        currentPage = 1;
+                        DOMElements.searchInputTrade.value = '';
+                        updateTradeUI(currentTradeType);
                         fetchTradeFeeData(currentTradeCoin);
                     } catch(e) {
                         console.error("Error in trade type click handler:", e);
@@ -1143,7 +1150,7 @@
                 }
             });
 
-            // Initial Load
+            // --- Initial Load ---
             document.querySelector('.tab-button[data-tab="trade"]').classList.add('active');
             document.querySelector('.tab-button[data-tab="recharge-withdraw"]').classList.remove('active');
             DOMElements.tradeContent.classList.remove('hidden');
@@ -1153,41 +1160,12 @@
             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="spot"]').classList.add('active');
             document.querySelector('#tradeContent .secondary-tab-button[data-trade-type="contract"]').classList.remove('active');
             currentTradeType = 'spot';
-            DOMElements.customTradeCoinSelectContainer.classList.remove('disabled');
+            
             currentTradeCoin = DOMElements.tradeCoinSelect.value;
+            updateTradeUI(currentTradeType);
             fetchTradeFeeData(currentTradeCoin);
         });
+      })();
     </script>
-<script type="text/javascript">
-  var lastSentHeight = 0;
-  var resizeTimer; 
-
-  function calculateAndSendHeight() {
-    var height = document.documentElement.scrollHeight + 5;
-
-    if (Math.abs(height - lastSentHeight) < 3) {
-      return;
-    }
-    
-    lastSentHeight = height;
-    parent.postMessage({ frameHeight: height, source: 'my-zendesk-iframe' }, '*');
-  }
-
-  function scheduleHeightSend() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(calculateAndSendHeight, 150);
-  }
-
-  window.addEventListener('load', scheduleHeightSend);
-  window.addEventListener('resize', scheduleHeightSend);
-
-  var observer = new MutationObserver(scheduleHeightSend);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    childList: true,
-    subtree: true,
-    characterData: true
-  });
-</script>
 </body>
 </html>
