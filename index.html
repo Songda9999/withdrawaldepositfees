@@ -1316,5 +1316,17 @@
         });
       })();
     </script>
+        <script>
+  function sendHeight() {
+    const height = document.body.scrollHeight;
+    parent.postMessage({ type: 'resize-iframe', height: height }, '*');
+  }
+
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+
+  // 若页面内容有分页按钮/切换 tab，调用 sendHeight()
+  setInterval(sendHeight, 1000); // 防止动态变化高度不及时
+</script>
 </body>
 </html>
