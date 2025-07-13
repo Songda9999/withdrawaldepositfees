@@ -408,6 +408,11 @@
     <div class="container">
         
         <div class="mb-6">
+            <!-- Update Time Display -->
+            <div class="mb-4">
+                <p id="updateTimeDisplay" class="text-sm text-gray-500"></p>
+            </div>
+
             <!-- Primary Tabs -->
             <div class="flex tab-group mb-4">
                 <button class="tab-button active" data-tab="trade">交易</button>
@@ -533,6 +538,25 @@
             "TRX": "https://dlbitex-pd.oss-cn-hongkong.aliyuncs.com/upload/20231109173127837.png",
             "ETC": "https://dlbitex-pd.oss-cn-hongkong.aliyuncs.com/upload/20231109171643079.png",
         };
+        
+        /**
+         * 更新页面上的时间戳显示
+         */
+        function updateTimestamp() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            
+            const updateTimeElement = document.getElementById('updateTimeDisplay');
+            if (updateTimeElement) {
+                updateTimeElement.textContent = `更新时间: ${formattedTime}`;
+            }
+        }
 
         function formatNumber(num) {
             if (num === null || num === undefined || num === '') {
@@ -900,6 +924,7 @@
                 if (data && data.code === "0" && data.data && Array.isArray(data.data.feeDataList)) {
                     allRechargeWithdrawData = data.data.feeDataList;
                     filterRechargeWithdrawTable(DOMElements.searchInputRechargeWithdraw.value);
+                    updateTimestamp();
                 } else {
                     console.error("API returned invalid data structure:", data);
                     allRechargeWithdrawData = [];
@@ -935,6 +960,7 @@
                 if (data && data.code === "0" && data.data && data.data.feeList && Array.isArray(data.data.feeList)) {
                     allTradeFeeData = data.data.feeList;
                     filterTradeTable(DOMElements.searchInputTrade.value);
+                    updateTimestamp();
                 } else {
                     allTradeFeeData = [];
                     filterTradeTable('');
@@ -1033,6 +1059,7 @@
             };
 
             setupCustomSelect();
+            updateTimestamp(); // Show initial time
 
             document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
                 button.addEventListener('click', (event) => {
