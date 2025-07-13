@@ -7,6 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        html {
+            /* This enables smooth scrolling for the whole page */
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #ffffff;
@@ -643,6 +647,16 @@
         };
         
         /**
+         * Scrolls the page to the top with a smooth animation.
+         */
+        function scrollToTop() {
+            const topEl = document.querySelector('.container');
+            if (topEl) {
+                topEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        /**
          * 更新页面上的时间戳显示
          */
         function updateTimestamp() {
@@ -699,9 +713,13 @@
         }
         
         function goToPage(page) {
+            scrollToTop();
             currentPage = page;
-            renderCurrentTabContent();
-            renderPagination();
+            showContentArea('loading');
+            // Use a short delay to make the transition feel smoother
+            setTimeout(() => {
+                renderCurrentTabContent();
+            }, 200);
         }
 
         function renderPagination() {
@@ -1128,6 +1146,7 @@
 
             optionsContainer.querySelectorAll('.custom-option').forEach(optionDiv => {
                 optionDiv.addEventListener('click', () => {
+                    scrollToTop();
                     if (container.classList.contains('disabled')) return;
                     
                     valueDisplay.textContent = optionDiv.textContent;
@@ -1191,6 +1210,7 @@
 
             document.querySelectorAll('.tab-button[data-tab]').forEach(button => {
                 button.addEventListener('click', (event) => {
+                    scrollToTop();
                     try {
                         document.querySelectorAll('.tab-button[data-tab]').forEach(btn => btn.classList.remove('active'));
                         event.target.classList.add('active');
@@ -1219,6 +1239,7 @@
 
             document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(button => {
                 button.addEventListener('click', (event) => {
+                    scrollToTop();
                     try {
                         document.querySelectorAll('#rechargeWithdrawContent .tab-button[data-auth]').forEach(btn => btn.classList.remove('active'));
                         event.target.classList.add('active');
@@ -1234,6 +1255,7 @@
 
             document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(button => {
                 button.addEventListener('click', (event) => {
+                    scrollToTop();
                     try {
                         document.querySelectorAll('#tradeContent .secondary-tab-button[data-trade-type]').forEach(btn => btn.classList.remove('active'));
                         event.target.classList.add('active');
@@ -1294,17 +1316,5 @@
         });
       })();
     </script>
-    <script>
-  function sendHeight() {
-    const height = document.body.scrollHeight;
-    parent.postMessage({ type: 'resize-iframe', height: height }, '*');
-  }
-
-  window.addEventListener('load', sendHeight);
-  window.addEventListener('resize', sendHeight);
-
-  // 若页面内容有分页按钮/切换 tab，调用 sendHeight()
-  setInterval(sendHeight, 1000); // 防止动态变化高度不及时
-</script>
 </body>
 </html>
