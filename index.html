@@ -508,13 +508,6 @@
         window.addEventListener('load', scheduleHeightSend);
         window.addEventListener('resize', scheduleHeightSend);
 
-        var observer = new MutationObserver(scheduleHeightSend);
-        observer.observe(document.body, {
-          attributes: true,
-          childList: true,
-          subtree: true,
-        });
-
         // --- Main application logic ---
         const RECHARGE_WITHDRAW_API_URL = 'https://withdrawrechargefee.sokdana2233.workers.dev/';
         const TRADE_API_URL = 'https://getexchangefee.sokdana2233.workers.dev/';
