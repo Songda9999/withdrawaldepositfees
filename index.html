@@ -1284,6 +1284,7 @@
 
             DOMElements.prevPageButton.addEventListener('click', () => {
                 if (currentPage > 1) {
+                    scrollToTop();
                     goToPage(currentPage - 1);
                 }
             });
