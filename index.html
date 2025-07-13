@@ -1325,31 +1325,11 @@
     parent.postMessage({ type: 'resize-iframe', height: height }, '*');
   }
 
-  function sendScrollToTop() {
-    parent.postMessage({ type: 'scroll-top' }, '*');
-  }
-
-  function scrollToTop() {
-    // 尝试强制 iframe 自身滚动（在某些浏览器可生效）
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // 通知父级滚动（Zendesk 页面）
-    sendScrollToTop();
-  }
-
-  window.addEventListener('load', () => {
-    sendHeight();
-    setTimeout(() => {
-      scrollToTop();
-    }, 300); // 延迟执行，提高在手机上的成功率
-  });
-
+  window.addEventListener('load', sendHeight);
   window.addEventListener('resize', sendHeight);
 
-  // 持续同步高度，确保动态数据变更后 iframe 高度也更新
-  setInterval(sendHeight, 1000);
-
-  // 封装为全局供其他交互点击使用
-  window.scrollToTop = scrollToTop;
+  // 若页面内容有分页按钮/切换 tab，调用 sendHeight()
+  setInterval(sendHeight, 1000); // 防止动态变化高度不及时
 </script>
 </body>
 </html>
